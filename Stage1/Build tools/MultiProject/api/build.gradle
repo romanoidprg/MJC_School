@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'com.epam.mjc'
+version '1.0'
+
+application{
+    mainClass = 'com.epam.mjc.api.App'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    compile project(":core")
+
+}
+
+test {
+    useJUnitPlatform()
+}
