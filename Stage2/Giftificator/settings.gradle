@@ -1,0 +1,5 @@
+rootProject.name = 'Giftificator'
+include ':web'
+include ':repo'
+include ':service'
+
