@@ -7,20 +7,19 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public enum ConnectionPool {
-    POOL(new PoolProperties(), new DataSource());
+    REAL_DB("jdbc:mysql://localhost:3306/giftificator", "com.mysql.cj.jdbc.Driver"),
+    IN_MEMORY_DB("jdbc:h2:mem:db; INIT=RUNSCRIPT FROM '~/create.sql'\\;RUNSCRIPT FROM '~/populate.sql';IGNORE_UNKNOWN_SETTINGS=TRUE;MODE=MYSQL","org.h2.Driver" );
 
-    PoolProperties p;
-    DataSource dataSource;
+    PoolProperties p = new PoolProperties();
+    DataSource dataSource = new DataSource();
 
-    ConnectionPool(PoolProperties poolProperties, DataSource dataSource) {
-        p = poolProperties;
-        this.dataSource = dataSource;
+    ConnectionPool(String dbURL, String driverClassName) {
+        p.setUrl(dbURL);
+        p.setDriverClassName(driverClassName);
         init();
     }
 
     private void init() {
-        p.setUrl("jdbc:mysql://localhost:3306/giftificator");
-        p.setDriverClassName("com.mysql.cj.jdbc.Driver");
         p.setUsername("root");
         p.setPassword("romanoid");
         p.setJmxEnabled(true);

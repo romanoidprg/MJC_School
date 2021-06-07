@@ -1,7 +1,9 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.dao.DaoFactory;
 import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
@@ -12,7 +14,19 @@ import java.util.List;
 
 public class CertRepoService implements CommonService<GiftCertificate> {
 
-    CommonDao<GiftCertificate, CertCriteria> certDao = new CertDao();
+    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
+
+    private CommonDao<GiftCertificate, CertCriteria> certDao = DaoFactory.getCertDao(connectionPool);
+
+    public void setDataBaseToReal(){
+        connectionPool = ConnectionPool.REAL_DB;
+        certDao = DaoFactory.getCertDao(connectionPool);
+    }
+
+    public void setDataBaseToEmbedded(){
+        connectionPool = ConnectionPool.IN_MEMORY_DB;
+        certDao = DaoFactory.getCertDao(connectionPool);
+    }
 
     @Override
     public boolean createFromJson(String jsonString) {
@@ -36,11 +50,11 @@ public class CertRepoService implements CommonService<GiftCertificate> {
 
     @Override
     public List<GiftCertificate> readByCriteria(String tagName, String name, String description, String sortByName, String sortByDate, String sortOrder) {
-            return certDao.readByCriteria(
-                    new CertCriteria(tagName, name, description,
-                            Boolean.parseBoolean(sortByName),
-                            Boolean.parseBoolean(sortByDate),
-                            sortOrder));
+        return certDao.readByCriteria(
+                new CertCriteria(tagName, name, description,
+                        Boolean.parseBoolean(sortByName),
+                        Boolean.parseBoolean(sortByDate),
+                        sortOrder));
     }
 
     @Override
@@ -55,7 +69,8 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             //todo: logging error
             e.getMessage();
         }
-        return result;    }
+        return result;
+    }
 
     @Override
     public boolean deleteById(String id) {
