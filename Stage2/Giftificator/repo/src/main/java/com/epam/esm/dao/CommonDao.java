@@ -14,6 +14,6 @@ public interface CommonDao<T, U extends Criteria> {
 
     boolean update(T entity);
 
-    boolean delete(long id);
+    boolean deleteById(long id);
 
 }

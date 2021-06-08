@@ -49,12 +49,15 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     }
 
     @Override
-    public List<GiftCertificate> readByCriteria(String tagName, String name, String description, String sortByName, String sortByDate, String sortOrder) {
+    public List<GiftCertificate> readByCriteria(String tagName, String name, String description,
+                                                String sortByName, String sortByCrDate, String sortByUpdDate,
+                                                String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder) {
         return certDao.readByCriteria(
                 new CertCriteria(tagName, name, description,
                         Boolean.parseBoolean(sortByName),
-                        Boolean.parseBoolean(sortByDate),
-                        sortOrder));
+                        Boolean.parseBoolean(sortByCrDate),
+                        Boolean.parseBoolean(sortByUpdDate),
+                        sortNameOrder, sortCrDateOrder, sortUpdDateOrder));
     }
 
     @Override
@@ -74,6 +77,6 @@ public class CertRepoService implements CommonService<GiftCertificate> {
 
     @Override
     public boolean deleteById(String id) {
-        return certDao.delete(Long.parseLong(id));
+        return certDao.deleteById(Long.parseLong(id));
     }
 }

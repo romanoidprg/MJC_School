@@ -2,6 +2,9 @@ package com.epam.esm.model;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -9,16 +12,17 @@ import java.util.Objects;
 
 public class GiftCertificate {
 
-    private long id;
-    private String name;
-    private String description;
-    private int price;
-    private int duration;
-    private String createDate;
-    private String lastUpdateDate;
-    private List<Tag> tags;
-
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
+    private long id = 0;
+    private String name = "";
+    private String description = "";
+    private int price = 0;
+    private int duration = 0;
+    private String createDate = DateFormatUtils.format(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)), DATE_FORMAT);
+    private String lastUpdateDate = DateFormatUtils.format(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)), DATE_FORMAT);
+    private List<Tag> tags = new ArrayList<>();
+
 
     public GiftCertificate(){
     }

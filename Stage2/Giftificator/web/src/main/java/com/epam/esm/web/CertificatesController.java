@@ -44,10 +44,15 @@ public class CertificatesController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "sort_by_name", required = false) String sortByName,
-            @RequestParam(value = "sort_by_date", required = false) String sortByDate,
-            @RequestParam(value = "sort_order", required = false) String sortOrder) {
+            @RequestParam(value = "sort_by_cr_date", required = false) String sortByCrDate,
+            @RequestParam(value = "sort_by_upd_date", required = false) String sortByUpdDate,
+            @RequestParam(value = "sort_name_order", required = false) String sortNameOrder,
+            @RequestParam(value = "sort_cr_date_order", required = false) String sortCrDateOrder,
+            @RequestParam(value = "sort_upd_date_order", required = false) String sortUpdDateOrder) {
 
-        return certRepoService.readByCriteria(tagName, name, description, sortByName, sortByDate, sortOrder);
+        return certRepoService.readByCriteria(tagName, name, description,
+                sortByName, sortByCrDate, sortByUpdDate,
+                sortNameOrder, sortCrDateOrder, sortUpdDateOrder);
     }
 
     @RequestMapping(method = RequestMethod.PUT)

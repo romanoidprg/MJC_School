@@ -3,8 +3,8 @@ package com.epam.esm.model;
 import java.util.Objects;
 
 public class Tag {
-    private long id;
-    private String name;
+    private long id = 0;
+    private String name = "";
 
     public Tag() {
     }
