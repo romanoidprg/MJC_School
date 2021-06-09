@@ -8,9 +8,11 @@ public interface CommonService<T> {
 
     T readById(String id);
 
-    List<T> readByCriteria(String tagName, String name, String description,
-                           String sortByName, String sortByCrDate, String sortByUpdDate,
-                           String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder);
+    List<T> readByCriteria(String... params);
+
+//    List<T> readByCriteria(String tagName, String name, String description,
+//                           String sortByName, String sortByCrDate, String sortByUpdDate,
+//                           String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder);
 
     boolean updateFromJson(String jsonString);
 

@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
-    public static final String SQL_CREATE_CERT = "INSERT INTO gift_certificates (name, description, price, duration, create_date, last_update_date) VALUES (?, ?, ?, ?, ?, ?)";
-    public static final String SQL_CREATE_TAG = "INSERT INTO tags (name) VALUES (?)";
+    private static final String SQL_CREATE_CERT = "INSERT INTO gift_certificates " +
+            "(name, description, price, duration, create_date, last_update_date) " +
+            "VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String SQL_CREATE_TAG = "INSERT INTO tags (name) VALUES (?)";
     private static final String SQL_CREATE_CERT_TAG = "INSERT INTO certs_tags VALUES (?, ?)";
     private static final String SQL_READ_CERT_BY_ID = "SELECT c.*, t.* " +
             "FROM (gift_certificates AS c LEFT JOIN certs_tags AS ct ON c.id=ct.cert_id) " +
@@ -30,12 +32,11 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
             "FROM (gift_certificates AS c LEFT JOIN certs_tags AS ct ON c.id=ct.cert_id) " +
             "LEFT JOIN tags AS t ON ct.tag_id=t.id " +
             "WHERE t.name LIKE ? AND c.name LIKE ? AND c.description LIKE ? " +
-            "ORDER BY c.id";
-    public static final String SQL_NAME = "c.name ";
-    public static final String SQL_CREATE_DATE = "c.create_date ";
-    public static final String SQL_UPDATE_DATE = "c.last_update_date ";
-    public static final String SQL_ASC = "ASC ";
-    public static final String SQL_DESC = "DESC ";
+            "ORDER BY ";
+    private static final String SQL_NAME = "c.name ";
+    private static final String SQL_CREATE_DATE = "c.create_date ";
+    private static final String SQL_UPDATE_DATE = "c.last_update_date ";
+    private static final String SQL_ID = "c.id";
 
     private final ConnectionPool connectionPool;
 
@@ -167,21 +168,28 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
     private String prepareSQLFromCriteria(CertCriteria cr) {
         StringBuilder result = new StringBuilder(SQL_READ_CERT_BY_CRITERIA);
+        boolean sortById = true;
 
         if (cr.isSortByName()) {
             result.append(", ");
             result.append(SQL_NAME);
             result.append(cr.getSortNameOrder());
+            sortById= false;
         }
         if (cr.isSortByCrDate()) {
             result.append(", ");
             result.append(SQL_CREATE_DATE);
             result.append(cr.getSortCrDateOrder());
+            sortById= false;
         }
         if (cr.isSortByUpdDate()) {
             result.append(", ");
             result.append(SQL_UPDATE_DATE);
             result.append(cr.getSortUpdDateOrder());
+            sortById= false;
+        }
+        if (sortById) {
+            result.append(SQL_ID);
         }
 
         return result.toString();
