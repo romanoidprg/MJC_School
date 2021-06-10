@@ -5,6 +5,9 @@ import com.epam.esm.dao.CommonDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,6 +18,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+@Component
 
 public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     private static final String SQL_CREATE_CERT = "INSERT INTO gift_certificates " +
@@ -38,11 +43,12 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     private static final String SQL_UPDATE_DATE = "c.last_update_date ";
     private static final String SQL_ID = "c.id";
 
-    private final ConnectionPool connectionPool;
+    @Autowired
+    private ConnectionPool connectionPool;
 
-    public CertDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
-    }
+//    public CertDao(ConnectionPool connectionPool) {
+//        this.connectionPool = connectionPool;
+//    }
 
     @Override
     public boolean create(GiftCertificate entity) {

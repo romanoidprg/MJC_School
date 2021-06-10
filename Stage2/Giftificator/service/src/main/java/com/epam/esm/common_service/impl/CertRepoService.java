@@ -8,24 +8,22 @@ import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
+@Scope
 public class CertRepoService implements CommonService<GiftCertificate> {
 
-    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
+//    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
 
-    private CommonDao<GiftCertificate, CertCriteria> certDao = DaoFactory.getCertDao(connectionPool);
-
-    public void setDataBaseToReal() {
-        connectionPool = ConnectionPool.REAL_DB;
-        certDao = DaoFactory.getCertDao(connectionPool);
-    }
-
-    public void setDataBaseToEmbedded() {
-        connectionPool = ConnectionPool.IN_MEMORY_DB;
-        certDao = DaoFactory.getCertDao(connectionPool);
-    }
+    @Autowired
+    @Qualifier("certDao")
+    private CommonDao<GiftCertificate, CertCriteria> certDao;
 
     @Override
     public boolean createFromJson(String jsonString) {

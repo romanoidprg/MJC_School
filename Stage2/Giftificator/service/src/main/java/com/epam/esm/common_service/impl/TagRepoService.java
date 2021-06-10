@@ -8,24 +8,19 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 
 public class TagRepoService implements CommonService<Tag> {
 
-    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
 
-    private CommonDao<Tag, TagCriteria> tagDao = DaoFactory.getTagDao(connectionPool);
+//    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
 
-    public void setDataBaseToReal(){
-        connectionPool = ConnectionPool.REAL_DB;
-        tagDao = DaoFactory.getTagDao(connectionPool);
-    }
-
-    public void setDataBaseToEmbedded(){
-        connectionPool = ConnectionPool.IN_MEMORY_DB;
-        tagDao = DaoFactory.getTagDao(connectionPool);
-    }
+    @Autowired
+    @Qualifier("tagDao")
+    private CommonDao<Tag, TagCriteria> tagDao;
 
     @Override
     public boolean createFromJson(String jsonString) {

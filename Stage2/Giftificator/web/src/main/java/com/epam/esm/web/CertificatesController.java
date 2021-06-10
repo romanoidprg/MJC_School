@@ -4,13 +4,9 @@ import com.epam.esm.common_service.impl.CertRepoService;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
@@ -22,22 +18,23 @@ import java.util.List;
 @RequestMapping(value = "/v1/certificates")
 public class CertificatesController {
 
-    CommonService<GiftCertificate> certRepoService = new CertRepoService();
+    @Autowired
+    private CommonService<GiftCertificate> certRepoService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     @ResponseBody
     public boolean createCertificate(@RequestBody String jsonString) {
         return certRepoService.createFromJson(jsonString);
     }
 
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id}")
     @ResponseBody
     public GiftCertificate readCertificateById(@PathVariable String id) {
         return certRepoService.readById(id);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     @ResponseBody
     public List<GiftCertificate> readCertificatesByParams(
             @RequestParam(value = "tag_name", required = false) String tagName,
@@ -55,16 +52,15 @@ public class CertificatesController {
                 sortNameOrder, sortCrDateOrder, sortUpdDateOrder);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @PutMapping
     @ResponseBody
     public boolean updateCertificate(@RequestBody String jsonString) {
         return certRepoService.updateFromJson(jsonString);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}")
     @ResponseBody
     public boolean deleteCertificate(@PathVariable String id) {
-        //todo: must return result of deleting
         return certRepoService.deleteById(id);
     }
 
