@@ -5,6 +5,7 @@ import com.epam.esm.common_service.CommonService;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,16 +20,17 @@ import java.util.List;
 public class CertificatesController {
 
     @Autowired
+    @Qualifier("certRepoService")
     private CommonService<GiftCertificate> certRepoService;
 
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public boolean createCertificate(@RequestBody String jsonString) {
         return certRepoService.createFromJson(jsonString);
     }
 
 
-    @GetMapping(value = "/{id}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{id}")
     @ResponseBody
     public GiftCertificate readCertificateById(@PathVariable String id) {
         return certRepoService.readById(id);
@@ -52,7 +54,7 @@ public class CertificatesController {
                 sortNameOrder, sortCrDateOrder, sortUpdDateOrder);
     }
 
-    @PutMapping
+    @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     public boolean updateCertificate(@RequestBody String jsonString) {
         return certRepoService.updateFromJson(jsonString);

@@ -4,6 +4,7 @@ import com.epam.esm.common_service.CommonService;
 import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.dao.DaoFactory;
+import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.fasterxml.jackson.core.JsonProcessingException;

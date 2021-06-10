@@ -1,5 +1,7 @@
 package com.epam.esm.config;
 
+import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.impl.CertRepoService;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.model.CertCriteria;
@@ -23,5 +25,9 @@ public class RootConfig {
         @Bean
         public CommonDao<GiftCertificate, CertCriteria> tagDao (){
                 return new CertDao();
+        }
+        @Bean
+        public CommonService<GiftCertificate> certRepoService (){
+                return new CertRepoService();
         }
 }
