@@ -5,8 +5,9 @@ import com.epam.esm.dao.CommonDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
@@ -33,25 +34,29 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
             "WHERE c.id=?";
     private static final String SQL_DELETE_CERT = "DELETE FROM gift_certificates WHERE id=?";
     private static final String SQL_FIND_TAG_BY_NAME = "SELECT * FROM tags WHERE name=?";
-    private static final String SQL_READ_CERT_BY_CRITERIA = "SELECT c.*, t.* " +
-            "FROM (gift_certificates AS c LEFT JOIN certs_tags AS ct ON c.id=ct.cert_id) " +
-            "LEFT JOIN tags AS t ON ct.tag_id=t.id " +
-            "WHERE t.name LIKE ? AND c.name LIKE ? AND c.description LIKE ? " +
-            "ORDER BY ";
-    private static final String SQL_NAME = "c.name ";
-    private static final String SQL_CREATE_DATE = "c.create_date ";
-    private static final String SQL_UPDATE_DATE = "c.last_update_date ";
-    private static final String SQL_ID = "c.id";
+    private static final String SQL_READ_CERT_BY_CRITERIA = "SELECT c1.*, t1.* FROM " +
+            "((SELECT c.* FROM (gift_certificates AS c LEFT JOIN certs_tags AS ct ON c.id=ct.cert_id) " +
+            "LEFT JOIN tags AS t ON ct.tag_id=t.id WHERE c.name LIKE ? AND c.description LIKE ? AND t.name LIKE ?) " +
+            "AS c1 LEFT JOIN certs_tags AS ct1 ON c1.id=ct1.cert_id) LEFT JOIN tags AS t1 ON ct1.tag_id=t1.id ORDER BY ";
+    private static final String SQL_NAME = "c1.name ";
+    private static final String SQL_CREATE_DATE = "c1.create_date ";
+    private static final String SQL_UPDATE_DATE = "c1.last_update_date ";
+    private static final String SQL_ID = "c1.id";
+    private static final String SQL_READ_CERT_BY_CRITERIA_ANY_TAG = "SELECT c1.*, t1.*  FROM " +
+            "(gift_certificates AS c1 LEFT JOIN certs_tags AS ct1 ON c1.id=ct1.cert_id) " +
+            "LEFT JOIN tags AS t1 ON ct1.tag_id=t1.id " +
+            "WHERE c1.name LIKE ? AND c1.description LIKE ? ORDER BY ";
+    private static final String SQL_UPDATE_CERT = "UPDATE gift_certificates SET name=?, description=?, " +
+            "price=?, duration=?, create_date=?, last_update_date=? WHERE id=?";
+
+    Logger logger = LogManager.getLogger(CertDao.class);
 
     @Autowired
     private ConnectionPool connectionPool;
 
-//    public CertDao(ConnectionPool connectionPool) {
-//        this.connectionPool = connectionPool;
-//    }
-
     @Override
     public boolean create(GiftCertificate entity) {
+        entity.resetNullFieldsToDefaults();
         boolean result = false;
         try (Connection c = connectionPool.getConnection()) {
             //todo realize transaction
@@ -86,7 +91,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
             result = true;
         } catch (
                 SQLException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -103,8 +108,8 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     }
 
     @Override
+    //todo what the best return - null or cert with empty fields if nothing found?
     public GiftCertificate readById(long id) {
-        //todo what the best return - null or cert with empty fields if nothing found?
         GiftCertificate result = null;
         try (Connection c = connectionPool.getConnection()) {
             PreparedStatement st = c.prepareStatement(SQL_READ_CERT_BY_ID);
@@ -130,20 +135,21 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
                         tags);
             }
         } catch (SQLException | ParseException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }
 
     @Override
     public List<GiftCertificate> readByCriteria(CertCriteria criteria) {
-        //todo realize
         List<GiftCertificate> result = new ArrayList<>();
         try (Connection c = connectionPool.getConnection()) {
             PreparedStatement st = c.prepareStatement(prepareSQLFromCriteria(criteria));
-            st.setString(1, criteria.getTagName());
-            st.setString(2, "%" + criteria.getName() + "%");
-            st.setString(3, "%" + criteria.getDescription() + "%");
+            st.setString(1, "%" + criteria.getName() + "%");
+            st.setString(2, "%" + criteria.getDescription() + "%");
+            if (!criteria.getTagName().equals("")) {
+                st.setString(3, criteria.getTagName());
+            }
             ResultSet rs = st.executeQuery();
             List<Tag> tags = new ArrayList<>();
             long prevId = 0;
@@ -163,36 +169,51 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
                             new SimpleDateFormat(GiftCertificate.DATE_FORMAT).parse(lastUpdateDate),
                             tags));
                 }
-                tags.add(new Tag(rs.getLong(8), rs.getString(9)));
+                long tagId = rs.getLong(8);
+                String tagName = rs.getString(9);
+                if (tagId != 0) {
+                    tags.add(new Tag(tagId, tagName));
+                }
 
             }
         } catch (SQLException | ParseException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }
 
     private String prepareSQLFromCriteria(CertCriteria cr) {
-        StringBuilder result = new StringBuilder(SQL_READ_CERT_BY_CRITERIA);
+        StringBuilder result = new StringBuilder();
+        if (cr.getTagName().equals("")) {
+            result.append(SQL_READ_CERT_BY_CRITERIA_ANY_TAG);
+        } else {
+            result.append(SQL_READ_CERT_BY_CRITERIA);
+        }
         boolean sortById = true;
 
         if (cr.isSortByName()) {
-            result.append(", ");
+            sortById = false;
             result.append(SQL_NAME);
             result.append(cr.getSortNameOrder());
-            sortById= false;
         }
         if (cr.isSortByCrDate()) {
-            result.append(", ");
+            if (!sortById) {
+                result.append(", ");
+            } else {
+                sortById = false;
+            }
             result.append(SQL_CREATE_DATE);
             result.append(cr.getSortCrDateOrder());
-            sortById= false;
         }
+
         if (cr.isSortByUpdDate()) {
-            result.append(", ");
+            if (!sortById) {
+                result.append(", ");
+            } else {
+                sortById = false;
+            }
             result.append(SQL_UPDATE_DATE);
             result.append(cr.getSortUpdDateOrder());
-            sortById= false;
         }
         if (sortById) {
             result.append(SQL_ID);
@@ -202,10 +223,30 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     }
 
     @Override
-    public boolean update(GiftCertificate entity) {
-        //todo realize
-
-        return true;
+    public boolean update(GiftCertificate updCert) {
+        boolean result = false;
+        GiftCertificate currCert = null;
+        if (updCert != null) {
+            currCert = readById(updCert.getId());
+        }
+        if (currCert != null) {
+            try (Connection c = connectionPool.getConnection()) {
+                currCert.update(updCert);
+                PreparedStatement st = c.prepareStatement(SQL_UPDATE_CERT);
+                st.setString(1, currCert.getName());
+                st.setString(2, currCert.getDescription());
+                st.setInt(3, currCert.getPrice());
+                st.setInt(4, currCert.getDuration());
+                st.setString(5, currCert.getCreateDate());
+                st.setString(6, currCert.getLastUpdateDate());
+                st.setLong(7, currCert.getId());
+                st.executeUpdate();
+                result = true;
+            } catch (SQLException e) {
+                logger.error(e.getMessage());
+            }
+        }
+        return result;
     }
 
     @Override
@@ -216,7 +257,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
             st.setLong(1, id);
             result = st.executeUpdate() != 0;
         } catch (SQLException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }

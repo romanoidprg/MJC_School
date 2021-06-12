@@ -10,10 +10,6 @@ public interface CommonService<T> {
 
     List<T> readByCriteria(String... params);
 
-//    List<T> readByCriteria(String tagName, String name, String description,
-//                           String sortByName, String sortByCrDate, String sortByUpdDate,
-//                           String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder);
-
     boolean updateFromJson(String jsonString);
 
     boolean deleteById(String id);

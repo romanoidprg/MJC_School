@@ -4,6 +4,9 @@ import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,24 +19,24 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
     private static final String SQL_READ_TAG_BY_CRITERIA = "SELECT * FROM tags WHERE name LIKE ? ORDER BY ";
     private static final String SQL_ID = "id";
     private static final String SQL_NAME = "name ";
+    private static final String SQL_DELETE_TAG = "DELETE FROM tags WHERE id=?";
 
-    private final ConnectionPool connectionPool;
+    Logger logger = LogManager.getLogger(TagDao.class);
 
-    public TagDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
-    }
+    @Autowired
+    private ConnectionPool connectionPool;
 
     @Override
     public boolean create(Tag entity) {
         boolean result = false;
         try (Connection c = connectionPool.getConnection()) {
             PreparedStatement st = c.prepareStatement(SQL_CREATE_TAG);
-            st.setString(1, "%" + entity.getName() + "%");
+            st.setString(1, entity.getName());
             st.executeUpdate();
             result = true;
         } catch (
                 SQLException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -50,7 +53,7 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
             }
         } catch (
                 SQLException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -65,14 +68,14 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
         List<Tag> result = new ArrayList<>();
         try (Connection c = connectionPool.getConnection()) {
             PreparedStatement st = c.prepareStatement(prepareSQLFromCriteria(criteria));
-            st.setString(1, criteria.getName());
+            st.setString(1, "%" + criteria.getName() + "%");
             ResultSet rs = st.executeQuery();
-            if (rs.next()) {
+            while (rs.next()) {
                 result.add(new Tag(rs.getLong(1), rs.getString(2)));
             }
         } catch (
                 SQLException e) {
-            //todo logging exception
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -80,10 +83,8 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
     private String prepareSQLFromCriteria(TagCriteria cr) {
         StringBuilder result = new StringBuilder(SQL_READ_TAG_BY_CRITERIA);
         if (cr.isSortByName()) {
-            result.append(", ");
             result.append(SQL_NAME);
             result.append(cr.getSortOrder());
-
         } else {
             result.append(SQL_ID);
         }
@@ -92,7 +93,14 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
 
     @Override
     public boolean deleteById(long id) {
-        //todo realize
-        return false;
+        boolean result = false;
+        try (Connection c = connectionPool.getConnection()) {
+            PreparedStatement st = c.prepareStatement(SQL_DELETE_TAG);
+            st.setLong(1, id);
+            result = st.executeUpdate() != 0;
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return result;
     }
 }

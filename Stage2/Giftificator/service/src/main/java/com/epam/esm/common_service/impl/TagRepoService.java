@@ -8,15 +8,17 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TagRepoService implements CommonService<Tag> {
 
-
-//    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
+    Logger logger = LogManager.getLogger(TagRepoService.class);
 
     @Autowired
     @Qualifier("tagDao")
@@ -31,8 +33,7 @@ public class TagRepoService implements CommonService<Tag> {
             tag = objectMapper.readValue(jsonString, Tag.class);
             result = tagDao.create(tag);
         } catch (JsonProcessingException e) {
-            //todo: logging error
-            e.getMessage();
+            logger.error(e.getMessage());
         }
         return result;
     }

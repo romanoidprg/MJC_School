@@ -1,18 +1,17 @@
 package com.epam.esm.web;
 
-import com.epam.esm.common_service.impl.CertRepoService;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.model.GiftCertificate;
-import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.sql.Date;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -21,7 +20,7 @@ public class CertificatesController {
 
     @Autowired
     @Qualifier("certRepoService")
-    private CommonService<GiftCertificate> certRepoService;
+    CommonService<GiftCertificate> certRepoService;
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -30,13 +29,13 @@ public class CertificatesController {
     }
 
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
     public GiftCertificate readCertificateById(@PathVariable String id) {
         return certRepoService.readById(id);
     }
 
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<GiftCertificate> readCertificatesByParams(
             @RequestParam(value = "tag_name", required = false) String tagName,
@@ -60,7 +59,7 @@ public class CertificatesController {
         return certRepoService.updateFromJson(jsonString);
     }
 
-    @DeleteMapping(value = "/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public boolean deleteCertificate(@PathVariable String id) {
         return certRepoService.deleteById(id);

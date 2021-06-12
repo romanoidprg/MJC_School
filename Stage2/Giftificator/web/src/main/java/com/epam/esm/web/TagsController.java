@@ -1,23 +1,24 @@
 package com.epam.esm.web;
 
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.common_service.impl.CertRepoService;
 import com.epam.esm.common_service.impl.TagRepoService;
-import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Date;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.io.FileNotFoundException;
 import java.util.List;
+
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Controller
 @RequestMapping(value = "/v1/tags")
 public class TagsController {
 
+    @Autowired
+    @Qualifier("tagRepoService")
     CommonService<Tag> tagRepoService = new TagRepoService();
 
     @RequestMapping(method = RequestMethod.POST)
@@ -46,9 +47,9 @@ public class TagsController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public boolean deleteTag(@PathVariable String id) {
-        //todo: must return result of deleting
         return tagRepoService.deleteById(id);
     }
+
 
 
 }

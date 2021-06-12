@@ -1,7 +1,7 @@
 package com.epam.esm.model;
 
 public class CertCriteria extends Criteria {
-    private String tagName = "%";
+    private String tagName = "";
     private String name = "";
     private String description = "";
     private boolean sortByName = false;
@@ -14,7 +14,7 @@ public class CertCriteria extends Criteria {
     public CertCriteria(String tagName, String name, String description,
                         boolean sortByName, boolean sortByCrDate, boolean sortByUpdDate,
                         String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder) {
-        this.tagName = tagName != null ? tagName : "%";
+        this.tagName = tagName != null ? tagName : "";
         this.name = name != null ? name : "";
         this.description = description != null ? description : "";
         this.sortByName = sortByName;

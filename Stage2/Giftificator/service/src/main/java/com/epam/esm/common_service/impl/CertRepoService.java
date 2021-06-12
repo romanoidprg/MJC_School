@@ -1,26 +1,22 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.CommonDao;
-import com.epam.esm.dao.DaoFactory;
-import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
-@Scope
+
 public class CertRepoService implements CommonService<GiftCertificate> {
 
-//    private ConnectionPool connectionPool = ConnectionPool.REAL_DB;
+    Logger logger = LogManager.getLogger(CertRepoService.class);
 
     @Autowired
     @Qualifier("certDao")
@@ -35,8 +31,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             cert = objectMapper.readValue(jsonString, GiftCertificate.class);
             result = certDao.create(cert);
         } catch (JsonProcessingException e) {
-            //todo: logging error
-            e.getMessage();
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -75,7 +70,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             cert = objectMapper.readValue(jsonString, GiftCertificate.class);
             result = certDao.update(cert);
         } catch (JsonProcessingException e) {
-            //todo: logging error
+            logger.error(e.getMessage());
             e.getMessage();
         }
         return result;

@@ -14,17 +14,17 @@ public class GiftCertificate {
 
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
-    private long id = 0;
-    private String name = "";
-    private String description = "";
-    private int price = 0;
-    private int duration = 0;
-    private String createDate = DateFormatUtils.format(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)), DATE_FORMAT);
-    private String lastUpdateDate = DateFormatUtils.format(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)), DATE_FORMAT);
-    private List<Tag> tags = new ArrayList<>();
+    private long id = -1;
+    private String name = null;
+    private String description = null;
+    private int price = -1;
+    private int duration = -1;
+    private String createDate = null;
+    private String lastUpdateDate = null;
+    private List<Tag> tags = null;
 
 
-    public GiftCertificate(){
+    public GiftCertificate() {
     }
 
     public GiftCertificate(long id,
@@ -75,6 +75,55 @@ public class GiftCertificate {
 
     public List<Tag> getTags() {
         return tags;
+    }
+
+    public void resetNullFieldsToDefaults() {
+        if (name == null) {
+            name ="";
+        }
+        if (description == null) {
+            description = "";
+        }
+        if (price == -1) {
+            price = 0;
+        }
+        if (duration == -1) {
+            duration = 0;
+        }
+        if (createDate == null) {
+            createDate = DateFormatUtils.format(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)), DATE_FORMAT);
+        }
+        if (lastUpdateDate == null) {
+            lastUpdateDate = DateFormatUtils.format(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)), DATE_FORMAT);
+        }
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+
+    }
+
+    public void update(GiftCertificate newCert) {
+        if (newCert.name != null) {
+            this.name = newCert.name;
+        }
+        if (newCert.description != null) {
+            this.description = newCert.description;
+        }
+        if (newCert.price != -1) {
+            this.price = newCert.price;
+        }
+        if (newCert.duration != -1) {
+            this.duration = newCert.duration;
+        }
+        if (newCert.createDate != null) {
+            this.createDate = newCert.createDate;
+        }
+        if (newCert.lastUpdateDate != null) {
+            this.lastUpdateDate = newCert.lastUpdateDate;
+        }
+        if (newCert.tags != null) {
+            this.tags = newCert.tags;
+        }
     }
 
     @Override
