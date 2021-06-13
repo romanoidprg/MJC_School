@@ -104,6 +104,8 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
         if (rs.next()) {
             result = rs.getLong(1);
         }
+        rs.close();
+        st.close();
         return result;
     }
 

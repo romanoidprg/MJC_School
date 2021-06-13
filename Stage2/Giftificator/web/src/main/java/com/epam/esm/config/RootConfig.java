@@ -12,7 +12,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
-@ComponentScan(basePackages = {"com.epam.esm.service"},
+@ComponentScan(basePackages = {"com.epam.esm.service", "com.epam.esm.web"},
         excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.ANNOTATION, value = EnableWebMvc.class)
         })
@@ -37,7 +37,7 @@ public class RootConfig {
         return new TagDao();
     }
 
-    @Bean
+    @Bean()
     public ConnectionPool connectionPool(){
         return ConnectionPool.get();
     }

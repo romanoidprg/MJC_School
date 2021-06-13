@@ -2,8 +2,8 @@
 <Configuration strict="true">
 
     <Appenders>
-        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/webapps/Giftificator/logs/app.log"
-                     filePattern="${sys:catalina.home}/webapps/Giftificator/logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log">
+        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/webapps/web-1.0/logs/app.log"
+                     filePattern="${sys:catalina.home}/webapps/web-1.0/logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log">
             <PatternLayout>
                 <Pattern>%d %p [%c] %m%n</Pattern>
             </PatternLayout>

@@ -50,6 +50,12 @@ public class TagsController {
         return tagRepoService.deleteById(id);
     }
 
-
+    @GetMapping(value = "/testExceptionHandler", produces = APPLICATION_JSON_VALUE)
+    public boolean testExceptionHandler() throws FileNotFoundException {
+        if (true) {
+            throw new FileNotFoundException("BusinessException in testExceptionHandler");
+        }
+        return true;
+    }
 
 }
