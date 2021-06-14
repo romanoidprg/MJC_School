@@ -1,5 +1,3 @@
 rootProject.name = 'Giftificator'
-include ':web'
-include ':repo'
-include ':service'
+include 'repo', 'service', 'web'
 

@@ -1,0 +1,3 @@
+JPDA_OPTS="-agentlib:jdwp=transport=dt_socket,address=*:49540,server=y,suspend=n"
+
+run tomcat: catalina.bat jpda start
