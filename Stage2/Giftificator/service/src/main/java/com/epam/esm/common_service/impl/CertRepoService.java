@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -43,22 +44,26 @@ public class CertRepoService implements CommonService<GiftCertificate> {
 
     @Override
     public List<GiftCertificate> readByCriteria(String... params) {
-        String tagName = params[0];
-        String name = params[1];
-        String description = params[2];
-        String sortByName = params[3];
-        String sortByCrDate = params[4];
-        String sortByUpdDate = params[5];
-        String sortNameOrder = params[6];
-        String sortCrDateOrder = params[7];
-        String sortUpdDateOrder = params[8];
+        List<GiftCertificate> result = new ArrayList<>();
+        if (params.length > 8) {
+            String tagName = params[0];
+            String name = params[1];
+            String description = params[2];
+            String sortByName = params[3];
+            String sortByCrDate = params[4];
+            String sortByUpdDate = params[5];
+            String sortNameOrder = params[6];
+            String sortCrDateOrder = params[7];
+            String sortUpdDateOrder = params[8];
 
-        return certDao.readByCriteria(
-                new CertCriteria(tagName, name, description,
-                        Boolean.parseBoolean(sortByName),
-                        Boolean.parseBoolean(sortByCrDate),
-                        Boolean.parseBoolean(sortByUpdDate),
-                        sortNameOrder, sortCrDateOrder, sortUpdDateOrder));
+            result = certDao.readByCriteria(
+                    new CertCriteria(tagName, name, description,
+                            Boolean.parseBoolean(sortByName),
+                            Boolean.parseBoolean(sortByCrDate),
+                            Boolean.parseBoolean(sortByUpdDate),
+                            sortNameOrder, sortCrDateOrder, sortUpdDateOrder));
+        }
+        return result;
     }
 
     @Override
@@ -78,6 +83,12 @@ public class CertRepoService implements CommonService<GiftCertificate> {
 
     @Override
     public boolean deleteById(String id) {
-        return certDao.deleteById(Long.parseLong(id));
+        boolean result = false;
+        try {
+            result = certDao.deleteById(Long.parseLong(id));
+        } catch (NumberFormatException e) {
+            logger.error(e.getMessage());
+        }
+        return result;
     }
 }

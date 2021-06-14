@@ -8,6 +8,7 @@ import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.dao.impl.TagDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -50,7 +51,14 @@ public class TestConfig {
 
     @Bean
     public TagDao tagDao() {
-        return new TagDao();
+        TagDao mockTagDao = Mockito.mock(TagDao.class);
+        Mockito.when(mockTagDao.create(any())).thenReturn(true);
+        Mockito.when(mockTagDao.readById(anyLong())).thenReturn(new Tag());
+        Mockito.when(mockTagDao.readByCriteria(any())).thenReturn(new ArrayList<>(Arrays.asList(
+                new Tag(),
+                new Tag())));
+        Mockito.when(mockTagDao.deleteById(anyLong())).thenReturn(true);
+        return mockTagDao;
     }
 
     @Bean()

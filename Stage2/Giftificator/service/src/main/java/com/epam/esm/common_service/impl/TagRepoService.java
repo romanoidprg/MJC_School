@@ -45,12 +45,16 @@ public class TagRepoService implements CommonService<Tag> {
 
     @Override
     public List<Tag> readByCriteria(String... params) {
-        String name = params[0];
-        String sortByName = params[1];
-        String sortOrder = params[2];
+        List<Tag> tagList = new ArrayList<>();
+        if (params.length > 2) {
+            String name = params[0];
+            String sortByName = params[1];
+            String sortOrder = params[2];
 
-        return tagDao.readByCriteria(
-                new TagCriteria(name, Boolean.parseBoolean(sortByName), sortOrder));
+            tagList = tagDao.readByCriteria(
+                    new TagCriteria(name, Boolean.parseBoolean(sortByName), sortOrder));
+        }
+        return tagList;
     }
 
     @Override
@@ -60,6 +64,12 @@ public class TagRepoService implements CommonService<Tag> {
 
     @Override
     public boolean deleteById(String id) {
-        return tagDao.deleteById(Long.parseLong(id));
+        boolean result = false;
+        try {
+            result = tagDao.deleteById(Long.parseLong(id));
+        } catch (NumberFormatException e) {
+            logger.error(e.getMessage());
+        }
+        return  result;
     }
 }
