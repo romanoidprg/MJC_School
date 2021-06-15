@@ -11,6 +11,7 @@ public class CertCriteria extends Criteria {
     private String sortCrDateOrder = "";
     private String sortUpdDateOrder = "";
 
+
     public CertCriteria(String tagName, String name, String description,
                         boolean sortByName, boolean sortByCrDate, boolean sortByUpdDate,
                         String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder) {
