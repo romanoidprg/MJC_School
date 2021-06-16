@@ -59,7 +59,6 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
         entity.resetNullFieldsToDefaults();
         boolean result = false;
         try (Connection c = connectionPool.getConnection()) {
-            //todo realize transaction
             ResultSet rs;
             PreparedStatement st = c.prepareStatement(SQL_CREATE_CERT, Statement.RETURN_GENERATED_KEYS);
             st.setString(1, entity.getName());

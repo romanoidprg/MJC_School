@@ -3,8 +3,6 @@ package com.epam.esm.web;
 import com.epam.esm.errors.ErrorResponse;
 import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.errors.NotExistEndPointException;
-import com.sun.org.apache.bcel.internal.classfile.Code;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
