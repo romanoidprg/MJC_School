@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -17,7 +18,7 @@ public class ConnectionPool {
 
     private static final ConnectionPool INSTANCE = new ConnectionPool();
 
-    private final static String PROPERTIES_FILE_NAME = "db.properties";
+    private final static String PROPERTIES_FILE_NAME = "/db.properties";
 
     private static final String URL = "url";
     private static final String DRIVER_CLASS_NAME = "driverClassName";
@@ -32,12 +33,14 @@ public class ConnectionPool {
 
     private final DataSource dataSource = new DataSource();
 
-    Logger logger = LogManager.getLogger(ConnectionPool.class);
+    private final Logger logger = LogManager.getLogger(ConnectionPool.class);
 
     private ConnectionPool() {
-        try (FileInputStream fis = new FileInputStream(this.getClass().getClassLoader().getResource(PROPERTIES_FILE_NAME).getPath())) {
+        try {
+            InputStream is = this.getClass().getResourceAsStream(PROPERTIES_FILE_NAME);
+//            FileInputStream fis = new FileInputStream(path);
             Properties properties = new Properties();
-            properties.load(fis);
+            properties.load(is);
             PoolProperties p = new PoolProperties();
             p.setUrl(properties.getProperty(URL));
             p.setDriverClassName(properties.getProperty(DRIVER_CLASS_NAME));
@@ -53,6 +56,8 @@ public class ConnectionPool {
             dataSource.setPoolProperties(p);
         } catch (IOException e) {
             logger.error(e.getMessage());
+        } finally {
+
         }
     }
 

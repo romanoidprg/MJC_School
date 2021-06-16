@@ -21,7 +21,7 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
     private static final String SQL_NAME = "name ";
     private static final String SQL_DELETE_TAG = "DELETE FROM tags WHERE id=?";
 
-    Logger logger = LogManager.getLogger(TagDao.class);
+    private final Logger logger = LogManager.getLogger(TagDao.class);
 
     @Autowired
     private ConnectionPool connectionPool;

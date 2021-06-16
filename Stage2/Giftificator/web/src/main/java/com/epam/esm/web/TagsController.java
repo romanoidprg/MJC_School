@@ -2,7 +2,9 @@ package com.epam.esm.web;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.impl.TagRepoService;
+import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.Tag;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -19,18 +21,18 @@ public class TagsController {
 
     @Autowired
     @Qualifier("tagRepoService")
-    CommonService<Tag> tagRepoService = new TagRepoService();
+    CommonService<Tag> tagRepoService;
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    public boolean createTag(@RequestBody String jsonString) {
+    public boolean createTag(@RequestBody String jsonString) throws JsonProcessingException {
         return tagRepoService.createFromJson(jsonString);
     }
 
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
-    public Tag readTagById(@PathVariable String id) {
+    public Tag readTagById(@PathVariable String id) throws NoSuchIdException {
         return tagRepoService.readById(id);
     }
 
@@ -48,14 +50,6 @@ public class TagsController {
     @ResponseBody
     public boolean deleteTag(@PathVariable String id) {
         return tagRepoService.deleteById(id);
-    }
-
-    @GetMapping(value = "/testExceptionHandler", produces = APPLICATION_JSON_VALUE)
-    public boolean testExceptionHandler() throws FileNotFoundException {
-        if (true) {
-            throw new FileNotFoundException("BusinessException in testExceptionHandler");
-        }
-        return true;
     }
 
 }

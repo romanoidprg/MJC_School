@@ -2,6 +2,7 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,14 +18,14 @@ import java.util.List;
 
 public class CertRepoService implements CommonService<GiftCertificate> {
 
-    Logger logger = LogManager.getLogger(CertRepoService.class);
+    private final Logger logger = LogManager.getLogger(CertRepoService.class);
 
     @Autowired
     @Qualifier("certDao")
     private CommonDao<GiftCertificate, CertCriteria> certDao;
 
     @Override
-    public boolean createFromJson(String jsonString) {
+    public boolean createFromJson(String jsonString) throws JsonProcessingException {
         boolean result = false;
         ObjectMapper objectMapper = new ObjectMapper();
         GiftCertificate cert;
@@ -33,13 +34,19 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             result = certDao.create(cert);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage());
+            throw e;
         }
         return result;
     }
 
     @Override
-    public GiftCertificate readById(String id) {
-        return (id.matches("[0-9]+")) ? certDao.readById(Long.parseLong(id)) : null;
+    public GiftCertificate readById(String id) throws NoSuchIdException {
+        if (id.matches("[0-9]+")) {
+            return certDao.readById(Long.parseLong(id));
+        } else {
+            NoSuchIdException e = new NoSuchIdException("The gift certificate with id ["+id+"] doesn't exist.");
+            throw e;
+        }
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.epam.esm.common_service.impl.TagRepoService;
 import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.dao.impl.TagDao;
+import com.epam.esm.errors.ErrorResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -41,4 +42,5 @@ public class RootConfig {
     public ConnectionPool connectionPool(){
         return ConnectionPool.get();
     }
+
 }

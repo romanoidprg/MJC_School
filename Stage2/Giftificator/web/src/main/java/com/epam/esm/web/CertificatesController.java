@@ -1,11 +1,17 @@
 package com.epam.esm.web;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.GiftCertificate;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,21 +28,18 @@ public class CertificatesController {
     @Qualifier("certRepoService")
     CommonService<GiftCertificate> certRepoService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    @ResponseBody
-    public boolean createCertificate(@RequestBody String jsonString) {
+    @PostMapping
+    public boolean createCertificate(@RequestBody String jsonString) throws JsonProcessingException {
         return certRepoService.createFromJson(jsonString);
     }
 
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public GiftCertificate readCertificateById(@PathVariable String id) {
+    @GetMapping(value = "/{id}")
+    public GiftCertificate readCertificateById(@PathVariable String id) throws NoSuchIdException {
         return certRepoService.readById(id);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping
     public List<GiftCertificate> readCertificatesByParams(
             @RequestParam(value = "tag_name", required = false) String tagName,
             @RequestParam(value = "name", required = false) String name,
@@ -53,14 +56,12 @@ public class CertificatesController {
                 sortNameOrder, sortCrDateOrder, sortUpdDateOrder);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
-    @ResponseBody
+    @PutMapping
     public boolean updateCertificate(@RequestBody String jsonString) {
         return certRepoService.updateFromJson(jsonString);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    @ResponseBody
+    @DeleteMapping(value = "/{id}")
     public boolean deleteCertificate(@PathVariable String id) {
         return certRepoService.deleteById(id);
     }

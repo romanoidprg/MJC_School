@@ -16,4 +16,12 @@ public class ErrorResponse {
     public String getErrorCode() {
         return errorCode;
     }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
 }

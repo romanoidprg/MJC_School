@@ -2,8 +2,10 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.config.TestConfig;
+import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +40,14 @@ class TagRepoServiceTest {
     private final String notJsonString = "qwerty";
 
     @Test
-    void WhenPassJsonStringThenSuccess() {
+    void WhenPassJsonStringThenSuccess() throws JsonProcessingException {
         assertTrue(tagRepoService.createFromJson(jsonStringTag));
         assertFalse(tagRepoService.createFromJson(jsonStringNotTag));
         assertFalse(tagRepoService.createFromJson(notJsonString));
     }
 
     @Test
-    void whenPassNumericStringThenSuccess() {
+    void whenPassNumericStringThenSuccess() throws NoSuchIdException {
         assertEquals(new Tag(), tagRepoService.readById("12"));
         assertNull(tagRepoService.readById("qwerty"));
     }

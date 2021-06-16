@@ -49,7 +49,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     private static final String SQL_UPDATE_CERT = "UPDATE gift_certificates SET name=?, description=?, " +
             "price=?, duration=?, create_date=?, last_update_date=? WHERE id=?";
 
-    Logger logger = LogManager.getLogger(CertDao.class);
+    private final Logger logger = LogManager.getLogger(CertDao.class);
 
     @Autowired
     private ConnectionPool connectionPool;
@@ -110,7 +110,6 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     }
 
     @Override
-    //todo what the best return - null or cert with empty fields if nothing found?
     public GiftCertificate readById(long id) {
         GiftCertificate result = null;
         try (Connection c = connectionPool.getConnection()) {
