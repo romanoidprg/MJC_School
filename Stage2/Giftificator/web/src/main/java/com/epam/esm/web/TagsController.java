@@ -1,7 +1,6 @@
 package com.epam.esm.web;
 
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.common_service.impl.TagRepoService;
 import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,10 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.FileNotFoundException;
 import java.util.List;
-
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Controller
 @RequestMapping(value = "/v1/tags")

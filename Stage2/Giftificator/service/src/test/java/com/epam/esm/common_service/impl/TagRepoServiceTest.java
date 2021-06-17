@@ -40,16 +40,22 @@ class TagRepoServiceTest {
     private final String notJsonString = "qwerty";
 
     @Test
-    void WhenPassJsonStringThenSuccess() throws JsonProcessingException {
-        assertTrue(tagRepoService.createFromJson(jsonStringTag));
-        assertFalse(tagRepoService.createFromJson(jsonStringNotTag));
-        assertFalse(tagRepoService.createFromJson(notJsonString));
+    void WhenPassJsonStringThenSuccess()  {
+        try {
+            assertTrue(tagRepoService.createFromJson(jsonStringTag));
+            assertFalse(tagRepoService.createFromJson(jsonStringNotTag));
+            assertFalse(tagRepoService.createFromJson(notJsonString));
+        } catch (JsonProcessingException e) {
+        }
     }
 
     @Test
-    void whenPassNumericStringThenSuccess() throws NoSuchIdException {
-        assertEquals(new Tag(), tagRepoService.readById("12"));
-        assertNull(tagRepoService.readById("qwerty"));
+    void whenPassNumericStringThenSuccess() {
+        try {
+            assertEquals(new Tag(), tagRepoService.readById("12"));
+            assertNull(tagRepoService.readById("qwerty"));
+        } catch (NoSuchIdException e) {
+        }
     }
 
     @Test

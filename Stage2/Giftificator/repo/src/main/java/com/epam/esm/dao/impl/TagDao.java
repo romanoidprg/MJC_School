@@ -4,11 +4,14 @@ import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +25,7 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
     private static final String SQL_DELETE_TAG = "DELETE FROM tags WHERE id=?";
 
     private final Logger logger = LogManager.getLogger(TagDao.class);
+
 
     @Autowired
     private ConnectionPool connectionPool;

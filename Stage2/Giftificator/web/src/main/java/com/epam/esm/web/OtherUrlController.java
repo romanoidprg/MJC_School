@@ -3,6 +3,8 @@ package com.epam.esm.web;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.errors.NotExistEndPointException;
 import com.epam.esm.model.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -24,9 +26,13 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RequestMapping(value = {"/*","/v1/*","/v1/certificates/*", "/v1/tags/*"})
 public class OtherUrlController {
 
+    private final Logger logger = LogManager.getLogger(OtherUrlController.class);
+
     @RequestMapping(produces = APPLICATION_JSON_VALUE)
     public void exceptionHandler() throws NotExistEndPointException {
-            throw new NotExistEndPointException();
+        NotExistEndPointException e = new NotExistEndPointException();
+        logger.error(e.getMessage());
+            throw e;
     }
 
 }

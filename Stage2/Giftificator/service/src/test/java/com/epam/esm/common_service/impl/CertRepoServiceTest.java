@@ -53,19 +53,23 @@ class CertRepoServiceTest {
     private final String notJsonString = "qwerty";
 
     @Test
-    void WhenPassJsonStringThenSuccess() throws JsonProcessingException {
-
-        assertTrue(certRepoService.createFromJson(jsonStringCert));
-        assertFalse(certRepoService.createFromJson(jsonStringNoCert));
-        assertFalse(certRepoService.createFromJson(notJsonString));
+    void WhenPassJsonStringThenSuccess()  {
+        try {
+            assertTrue(certRepoService.createFromJson(jsonStringCert));
+            assertFalse(certRepoService.createFromJson(jsonStringNoCert));
+            assertFalse(certRepoService.createFromJson(notJsonString));
+        } catch (JsonProcessingException e) {
+        }
 
     }
 
     @Test
-    void whenPassNumericStringThenSuccess() throws NoSuchIdException {
-
-        assertEquals(new GiftCertificate(), certRepoService.readById("12"));
-        assertNull(certRepoService.readById("qwerty"));
+    void whenPassNumericStringThenSuccess() {
+        try {
+            assertEquals(new GiftCertificate(), certRepoService.readById("12"));
+            assertNull(certRepoService.readById("qwerty"));
+        } catch (NoSuchIdException e) {
+        }
     }
 
     @Test

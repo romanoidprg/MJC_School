@@ -7,8 +7,8 @@ import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -26,11 +26,10 @@ public class CertRepoService implements CommonService<GiftCertificate> {
 
     @Override
     public boolean createFromJson(String jsonString) throws JsonProcessingException {
-        boolean result = false;
+        boolean result;
         ObjectMapper objectMapper = new ObjectMapper();
-        GiftCertificate cert;
         try {
-            cert = objectMapper.readValue(jsonString, GiftCertificate.class);
+            GiftCertificate cert = objectMapper.readValue(jsonString, GiftCertificate.class);
             result = certDao.create(cert);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage());
@@ -44,7 +43,8 @@ public class CertRepoService implements CommonService<GiftCertificate> {
         if (id.matches("[0-9]+")) {
             return certDao.readById(Long.parseLong(id));
         } else {
-            NoSuchIdException e = new NoSuchIdException("The gift certificate with id ["+id+"] doesn't exist.");
+            NoSuchIdException e = new NoSuchIdException("The gift certificate with id [" + id + "] doesn't exist.");
+            logger.error(e.getMessage());
             throw e;
         }
     }

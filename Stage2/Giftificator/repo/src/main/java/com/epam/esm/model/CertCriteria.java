@@ -1,15 +1,15 @@
 package com.epam.esm.model;
 
-public class CertCriteria extends Criteria {
-    private String tagName = "";
-    private String name = "";
-    private String description = "";
-    private boolean sortByName = false;
-    private boolean sortByCrDate = false;
-    private boolean sortByUpdDate = false;
-    private String sortNameOrder = "";
-    private String sortCrDateOrder = "";
-    private String sortUpdDateOrder = "";
+public class CertCriteria {
+    private final String tagName;
+    private final String name;
+    private final String description;
+    private final boolean sortByName;
+    private final boolean sortByCrDate;
+    private final boolean sortByUpdDate;
+    private final String sortNameOrder;
+    private final String sortCrDateOrder;
+    private final String sortUpdDateOrder;
 
 
     public CertCriteria(String tagName, String name, String description,

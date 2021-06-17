@@ -1,16 +1,14 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.cpool.ConnectionPool;
 import com.epam.esm.dao.CommonDao;
-import com.epam.esm.dao.DaoFactory;
 import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -26,12 +24,11 @@ public class TagRepoService implements CommonService<Tag> {
     private CommonDao<Tag, TagCriteria> tagDao;
 
     @Override
-    public boolean createFromJson(String jsonString) throws JsonProcessingException{
-        boolean result = false;
+    public boolean createFromJson(String jsonString) throws JsonProcessingException {
+        boolean result;
         ObjectMapper objectMapper = new ObjectMapper();
-        Tag tag;
         try {
-            tag = objectMapper.readValue(jsonString, Tag.class);
+            Tag tag = objectMapper.readValue(jsonString, Tag.class);
             result = tagDao.create(tag);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage());
@@ -45,7 +42,9 @@ public class TagRepoService implements CommonService<Tag> {
         if (id.matches("[0-9]+")) {
             return tagDao.readById(Long.parseLong(id));
         } else {
-            throw new NoSuchIdException("The gift certificate with id ["+id+"] doesn't exist.");
+            NoSuchIdException e = new NoSuchIdException("The gift certificate with id [" + id + "] doesn't exist.");
+            logger.error(e.getMessage());
+            throw e;
         }
     }
 
@@ -76,6 +75,6 @@ public class TagRepoService implements CommonService<Tag> {
         } catch (NumberFormatException e) {
             logger.error(e.getMessage());
         }
-        return  result;
+        return result;
     }
 }

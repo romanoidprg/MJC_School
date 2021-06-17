@@ -1,10 +1,8 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.model.Criteria;
-
 import java.util.List;
 
-public interface CommonDao<T, U extends Criteria> {
+public interface CommonDao<T, U> {
 
     boolean create(T entity);
 

@@ -1,9 +1,9 @@
 package com.epam.esm.model;
 
-public class TagCriteria extends Criteria {
-    private String name = "%";
-    private boolean sortByName = false;
-    private String sortOrder = "";
+public class TagCriteria {
+    private final String name;
+    private final boolean sortByName;
+    private final String sortOrder;
 
     public TagCriteria(String name, boolean sortByName, String sortOrder) {
         this.name = name != null ? name : "%";

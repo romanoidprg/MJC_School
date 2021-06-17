@@ -79,7 +79,7 @@ public class GiftCertificate {
 
     public void resetNullFieldsToDefaults() {
         if (name == null) {
-            name ="";
+            name = "";
         }
         if (description == null) {
             description = "";

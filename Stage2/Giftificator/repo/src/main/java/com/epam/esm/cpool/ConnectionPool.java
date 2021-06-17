@@ -1,12 +1,11 @@
 package com.epam.esm.cpool;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -38,7 +37,6 @@ public class ConnectionPool {
     private ConnectionPool() {
         try {
             InputStream is = this.getClass().getResourceAsStream(PROPERTIES_FILE_NAME);
-//            FileInputStream fis = new FileInputStream(path);
             Properties properties = new Properties();
             properties.load(is);
             PoolProperties p = new PoolProperties();
@@ -56,8 +54,6 @@ public class ConnectionPool {
             dataSource.setPoolProperties(p);
         } catch (IOException e) {
             logger.error(e.getMessage());
-        } finally {
-
         }
     }
 

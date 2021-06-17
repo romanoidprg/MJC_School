@@ -18,7 +18,8 @@ public class ErrorsHandler {
         CodeAndStatus cAS = getExIntCodeAndStatus(e);
         ErrorResponse erRsp = new ErrorResponse(e.getMessage() + " on URL: " + req.getRequestURL(),
                 cAS.status.value() + cAS.code);
-        return new ResponseEntity<>(erRsp, cAS.status);    }
+        return new ResponseEntity<>(erRsp, cAS.status);
+    }
 
     private CodeAndStatus getExIntCodeAndStatus(Exception e) {
         if (e instanceof NoSuchIdException) {
