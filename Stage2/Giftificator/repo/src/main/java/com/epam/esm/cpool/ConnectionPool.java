@@ -15,7 +15,7 @@ import java.util.Properties;
 @Component
 public class ConnectionPool {
 
-    private static final ConnectionPool INSTANCE = new ConnectionPool();
+//    private static final ConnectionPool INSTANCE = new ConnectionPool();
 
     private final static String PROPERTIES_FILE_NAME = "/db.properties";
 
@@ -57,8 +57,11 @@ public class ConnectionPool {
         }
     }
 
+//    public static ConnectionPool get() {
+//        return INSTANCE;
+//    }
     public static ConnectionPool get() {
-        return INSTANCE;
+        return new ConnectionPool();
     }
 
     public Connection getConnection() throws SQLException {

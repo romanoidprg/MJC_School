@@ -88,8 +88,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
             }
             result = true;
-        } catch (
-                SQLException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return result;
