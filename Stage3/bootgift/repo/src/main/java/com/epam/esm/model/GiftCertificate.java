@@ -19,7 +19,7 @@ public class GiftCertificate {
     private String description = null;
     private int price = -1;
     private int duration = -1;
-    private Date createDate = null;
+    private String createDate = null;
     private String lastUpdateDate = null;
     private List<Tag> tags = null;
 
