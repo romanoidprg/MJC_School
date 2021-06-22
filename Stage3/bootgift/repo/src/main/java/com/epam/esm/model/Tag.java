@@ -1,13 +1,11 @@
 package com.epam.esm.model;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -26,9 +24,18 @@ public class Tag {
     public Tag() {
     }
 
-    public Tag(long id, String name) {
+    public Tag(long id, String name, Set<GiftCertificate> certificates) {
         this.id = id;
         this.name = name;
+        this.certificates = certificates;
+    }
+
+    public Set<GiftCertificate> getCertificates() {
+        return certificates;
+    }
+
+    public void setCertificates(Set<GiftCertificate> certificates) {
+        this.certificates = certificates;
     }
 
     public long getId() {
@@ -47,17 +54,4 @@ public class Tag {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Tag tag = (Tag) o;
-        return id == tag.id &&
-                Objects.equals(name, tag.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name);
-    }
 }

@@ -1,6 +1,12 @@
 package com.epam.esm.errors;
 
-public class NoSuchIdException extends Exception{
+import org.springframework.http.HttpStatus;
+
+public class NoSuchIdException extends LocalAppException{
+    static {
+        code = 42L;
+        httpStatus = HttpStatus.BAD_REQUEST;
+    }
     public NoSuchIdException(){
         super();
     }
