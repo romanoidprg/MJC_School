@@ -29,10 +29,10 @@ public class RootConfig {
     public TagDao tagDao() {
         return new TagDao();
     }
-
-    @Bean()
-    public ConnectionPool connectionPool(){
-        return ConnectionPool.get();
-    }
+//
+//    @Bean()
+//    public ConnectionPool connectionPool(){
+//        return ConnectionPool.get();
+//    }
 
 }

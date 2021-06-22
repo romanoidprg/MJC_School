@@ -1,4 +1,4 @@
-package com.epam.esm.app;
+package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.errors.NoSuchIdException;
