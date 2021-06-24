@@ -14,7 +14,7 @@ public class ErrorsHandler {
     private static final String DEFAULT_CODE = "00";
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleNoExistEndPointException(HttpServletRequest req, Exception e) {
+    public ResponseEntity<ErrorResponse> handleException(HttpServletRequest req, Exception e) {
         ErrorResponse erRsp;
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         String code = DEFAULT_CODE;

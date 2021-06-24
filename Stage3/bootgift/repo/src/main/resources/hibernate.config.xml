@@ -5,7 +5,7 @@
 <hibernate-configuration>
 
     <session-factory>
-        <property name="hbm2ddl.auto">update</property>
+        <property name="hbm2ddl.auto">create</property>
         <property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
         <property name="connection.url">jdbc:mysql://localhost:3306/bootgift</property>
         <property name="connection.username">root</property>
