@@ -14,6 +14,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
     private final Logger logger = LogManager.getLogger(CertDao.class);
 
+    @Transactional
     @Override
     public boolean create(GiftCertificate entity) {
         boolean result = false;
@@ -34,12 +36,12 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
         SessionFactory factory = meta.getSessionFactoryBuilder().build();
         Session session = factory.openSession();
-//        Transaction t = session.beginTransaction();
+        Transaction t = session.beginTransaction();
 
         session.save(entity);
-//        t.commit();
-        factory.close();
+        t.commit();
         session.close();
+        factory.close();
 
         return result;
     }

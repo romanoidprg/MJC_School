@@ -1,5 +1,7 @@
 package com.epam.esm.model;
 
+import org.springframework.lang.NonNull;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +21,7 @@ public class GiftCertificate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @NonNull
     private long id;
 
     private String name;
@@ -32,9 +35,9 @@ public class GiftCertificate {
     @Column(name = "last_update_date")
     private Date lastUpdateDate;
 
-    @ManyToMany(targetEntity = Tag.class, cascade = CascadeType.ALL)
-    @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private Set<Tag> tags;
+//    @ManyToMany(targetEntity = Tag.class, cascade = CascadeType.ALL)
+//    @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+//    private Set<Tag> tags;
 
 
     public GiftCertificate() {
@@ -55,7 +58,7 @@ public class GiftCertificate {
         this.duration = duration;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
-        this.tags = tags;
+//        this.tags = tags;
     }
 
     public long getId() {
@@ -114,13 +117,13 @@ public class GiftCertificate {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public Set<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<Tag> tags) {
-        this.tags = tags;
-    }
+//    public Set<Tag> getTags() {
+//        return tags;
+//    }
+//
+//    public void setTags(Set<Tag> tags) {
+//        this.tags = tags;
+//    }
 
 }
 
