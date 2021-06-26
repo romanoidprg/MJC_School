@@ -1,43 +1,44 @@
 package com.epam.esm.model;
 
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-//@Entity
-//@Table(name = "tags")
+@Entity
+@Table(name = "tags")
 public class Tag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @NonNull
     private long id;
 
     private String name;
 
-    @ManyToMany(mappedBy = "tags")
-    private Set<GiftCertificate> certificates;
+    @ManyToMany(mappedBy = "tags", cascade = {CascadeType.ALL})
+    private List<GiftCertificate> certificates = new ArrayList<>();
 
     public Tag() {
     }
 
-    public Tag(long id, String name, Set<GiftCertificate> certificates) {
+    public Tag(long id, String name) {
         this.id = id;
         this.name = name;
-        this.certificates = certificates;
     }
 
-    public Set<GiftCertificate> getCertificates() {
+    public List<GiftCertificate> getCertificates() {
         return certificates;
     }
 
-    public void setCertificates(Set<GiftCertificate> certificates) {
+    public void setCertificates(List<GiftCertificate> certificates) {
         this.certificates = certificates;
     }
 
@@ -56,6 +57,7 @@ public class Tag {
     public void setName(String name) {
         this.name = name;
     }
+
 
 }
 

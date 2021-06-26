@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,6 @@ public class CertRepoService implements CommonService<GiftCertificate> {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             GiftCertificate cert = objectMapper.readValue(jsonString, GiftCertificate.class);
-//            cert.getCreateDate().matches()
             result = certDao.create(cert);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage());

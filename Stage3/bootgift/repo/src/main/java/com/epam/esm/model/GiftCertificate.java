@@ -1,6 +1,6 @@
 package com.epam.esm.model;
 
-import org.springframework.lang.NonNull;
+
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,8 +12,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
+
 
 @Entity
 @Table(name = "certificates")
@@ -21,7 +23,6 @@ public class GiftCertificate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @NonNull
     private long id;
 
     private String name;
@@ -35,9 +36,10 @@ public class GiftCertificate {
     @Column(name = "last_update_date")
     private Date lastUpdateDate;
 
-//    @ManyToMany(targetEntity = Tag.class, cascade = CascadeType.ALL)
-//    @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-//    private Set<Tag> tags;
+    @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.ALL})
+    @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private List<Tag> tags = new ArrayList<>();
 
 
     public GiftCertificate() {
@@ -49,8 +51,7 @@ public class GiftCertificate {
                            int price,
                            int duration,
                            Date createDate,
-                           Date lastUpdateDate,
-                           Set<Tag> tags) {
+                           Date lastUpdateDate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -58,7 +59,6 @@ public class GiftCertificate {
         this.duration = duration;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
-//        this.tags = tags;
     }
 
     public long getId() {
@@ -117,13 +117,13 @@ public class GiftCertificate {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-//    public Set<Tag> getTags() {
-//        return tags;
-//    }
-//
-//    public void setTags(Set<Tag> tags) {
-//        this.tags = tags;
-//    }
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
 
 }
 

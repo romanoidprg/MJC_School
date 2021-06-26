@@ -3,46 +3,42 @@ package com.epam.esm.dao.impl;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-@Component
+@Repository
 
 public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
+    public CertDao(){
+    }
+
     private final Logger logger = LogManager.getLogger(CertDao.class);
 
-    @Transactional
+    @Autowired
+    SessionFactory sessionFactory;
+
     @Override
+    @Transactional
     public boolean create(GiftCertificate entity) {
         boolean result = false;
-
-        StandardServiceRegistry ssr = new StandardServiceRegistryBuilder().configure("hibernate.config.xml").build();
-        Metadata meta = new MetadataSources(ssr).getMetadataBuilder().build();
-
-        SessionFactory factory = meta.getSessionFactoryBuilder().build();
-        Session session = factory.openSession();
-        Transaction t = session.beginTransaction();
-
+        Session session = sessionFactory.openSession();
         session.save(entity);
-        t.commit();
         session.close();
-        factory.close();
-
         return result;
     }
 
