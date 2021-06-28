@@ -2,39 +2,93 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.errors.EntityAlreadyExistException;
 import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.Tag;
+import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
 
 public class CertRepoService implements CommonService<GiftCertificate> {
 
+    private static final String WORDS_FILE = "D:\\JWD\\Lab\\Stage3\\bootgift\\web\\src\\main\\resources\\words.txt";
     private final Logger logger = LogManager.getLogger(CertRepoService.class);
 
     @Autowired
     @Qualifier("certDao")
     private CommonDao<GiftCertificate, CertCriteria> certDao;
 
+    @Autowired
+    @Qualifier("tagDao")
+    private CommonDao<Tag, TagCriteria> tagDao;
+
     @Override
-    public boolean createFromJson(String jsonString) throws JsonProcessingException {
-        boolean result;
+    public Long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
+        Long id;
         ObjectMapper objectMapper = new ObjectMapper();
+        GiftCertificate cert = objectMapper.readValue(jsonString, GiftCertificate.class);
+        if (!certDao.isExist(cert)) {
+            cert.setId(null);
+            cert.setCreateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+            cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+            id = certDao.create(cert);
+        } else {
+            throw new EntityAlreadyExistException();
+        }
+        return id;
+    }
+
+    @Override
+    public boolean fillTable() {
+        boolean result = false;
         try {
-            GiftCertificate cert = objectMapper.readValue(jsonString, GiftCertificate.class);
-            result = certDao.create(cert);
-        } catch (JsonProcessingException e) {
+            Tag t;
+            Random r1 = new Random();
+            Random r2 = new Random();
+            File file = new File(WORDS_FILE);
+            GiftCertificate cert;
+            int size = getWordsAmount(file);
+            int id;
+            int tagCol;
+            for (int i = 0; i < 10000; i++) {
+                cert = new GiftCertificate();
+                cert.setName(getRandomWord(file, size));
+                cert.setDescription(getRandomWord(file, size));
+                cert.setPrice(new Random().nextInt(10000));
+                cert.setDuration(new Random().nextInt(365));
+                cert.setCreateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+                cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+                tagCol = r1.nextInt(4)+1;
+                for (int j = 0; j < tagCol; j++) {
+                    id = r2.nextInt(999)+1;
+                    t = tagDao.readById(id);
+                    if (t==null) {
+                        throw new NoSuchIdException("Tag with id [" + id + "] doesn't exist.");
+                    }
+                    cert.getTags().add(t);
+                }
+                certDao.create(cert);
+            }
+            result = true;
+        } catch (FileNotFoundException | NoSuchIdException e) {
             logger.error(e.getMessage());
-            throw e;
         }
         return result;
     }
@@ -44,9 +98,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
         if (id.matches("[0-9]+")) {
             return certDao.readById(Long.parseLong(id));
         } else {
-            NoSuchIdException e = new NoSuchIdException("The gift certificate with id [" + id + "] doesn't exist.");
-            logger.error(e.getMessage());
-            throw e;
+            throw new NoSuchIdException("The gift certificate with id [" + id + "] doesn't exist.");
         }
     }
 

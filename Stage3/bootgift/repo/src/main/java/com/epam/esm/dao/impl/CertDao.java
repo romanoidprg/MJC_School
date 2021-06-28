@@ -3,7 +3,6 @@ package com.epam.esm.dao.impl;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
-import com.epam.esm.model.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -14,17 +13,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Repository
-
+@Transactional
 public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
-    public CertDao(){
+    private static final String IS_EXIST_SQL_QUERY = "SELECT * FROM certificates where name = :name " +
+            "AND description = :descr AND price = :price AND duration = :dur";
+
+    public CertDao() {
     }
 
     private final Logger logger = LogManager.getLogger(CertDao.class);
@@ -33,13 +32,24 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     SessionFactory sessionFactory;
 
     @Override
-    @Transactional
-    public boolean create(GiftCertificate entity) {
-        boolean result = false;
-        Session session = sessionFactory.openSession();
-        session.save(entity);
-        session.close();
-        return result;
+    public Long create(GiftCertificate entity) {
+        Long id;
+        Session session = sessionFactory.getCurrentSession();
+        id = (Long) session.save(entity);
+        return id;
+    }
+
+    @Override
+    public boolean isExist(GiftCertificate entity) {
+        Session s = sessionFactory.getCurrentSession();
+        return s.createSQLQuery(IS_EXIST_SQL_QUERY)
+                .setParameter("name", entity.getName())
+                .setParameter("descr", entity.getDescription())
+                .setParameter("price", entity.getPrice())
+                .setParameter("dur", entity.getDuration())
+                .addEntity(GiftCertificate.class)
+                .stream().findAny().isPresent();
+
     }
 
     private long getTagIdIfTagWithNameExist(String name, Connection c) throws SQLException {
@@ -50,6 +60,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     @Override
     public GiftCertificate readById(long id) {
         GiftCertificate result = null;
+
         return result;
     }
 
