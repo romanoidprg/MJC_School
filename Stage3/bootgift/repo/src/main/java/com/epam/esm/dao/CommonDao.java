@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface CommonDao<T, U> {
 
-    boolean create(T entity);
+    Long create(T entity);
 
     T readById(long id);
 
@@ -13,5 +13,7 @@ public interface CommonDao<T, U> {
     boolean update(T entity);
 
     boolean deleteById(long id);
+
+    boolean isExist(T entity);
 
 }

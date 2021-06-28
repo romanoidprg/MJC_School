@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Import;
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class,
 		DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
 @Import(RootConfig.class)
-@ComponentScan(basePackages = "com.epam.esm.controllers")
+@ComponentScan(basePackages = {"com.epam.esm.controllers"})
 public class BootGiftApplication {
 
 	public static void main(String[] args) {

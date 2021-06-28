@@ -27,9 +27,14 @@ public class CertificatesController {
     CommonService<GiftCertificate> certRepoService;
 
     @PostMapping
-    public boolean createCertificate(@RequestBody String jsonString) throws JsonProcessingException {
+    public Long createCertificate(@RequestBody String jsonString) throws Exception {
         return certRepoService.createFromJson(jsonString);
     }
+
+//    @PostMapping(value = "/filltable")
+//    public boolean fillCertificateTable() throws Exception {
+//        return certRepoService.fillTable();
+//    }
 
 
     @GetMapping(value = "/{id}")

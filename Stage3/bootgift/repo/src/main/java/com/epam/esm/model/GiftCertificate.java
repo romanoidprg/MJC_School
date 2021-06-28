@@ -1,20 +1,23 @@
 package com.epam.esm.model;
 
 
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -23,36 +26,53 @@ public class GiftCertificate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private String description;
+
+    @Column(nullable = false)
     private int price;
+
+    @Column(nullable = false)
     private int duration;
 
-    @Column(name = "create_date")
+    @Column(name = "create_date", nullable = false)
     private Date createDate;
 
-    @Column(name = "last_update_date")
+    @Column(name = "last_update_date", nullable = false)
     private Date lastUpdateDate;
 
-    @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.ALL})
+    @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private List<Tag> tags = new ArrayList<>();
+    private Set<Tag> tags = new HashSet<>();
 
+
+//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "cert")
+//    private Set<Order> orders = new HashSet();
+
+//    public Set<Order> getOrders() {
+//        return orders;
+//    }
+
+//    public void setOrders(Set<Order> orders) {
+//        this.orders = orders;
+//    }
 
     public GiftCertificate() {
     }
 
-    public GiftCertificate(long id,
-                           String name,
-                           String description,
-                           int price,
-                           int duration,
-                           Date createDate,
-                           Date lastUpdateDate) {
-        this.id = id;
+    public GiftCertificate(
+            String name,
+            String description,
+            int price,
+            int duration,
+            Date createDate,
+            Date lastUpdateDate) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -60,12 +80,34 @@ public class GiftCertificate {
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
     }
+//
+//    public void addTag(Tag tag) {
+//        tags.add(tag);
+//        tag.getCertificates().add(this);
+//    }
+//
+//    public void addTags(Set<Tag> tags) {
+//        for (Tag t : tags) {
+//            this.addTag(t);
+//        }
+//    }
+//
+//    public void removeTag(Tag tag) {
+//        tags.remove(tag);
+//        tag.getCertificates().remove(this);
+//    }
+//
+//    public void removeTags(Set<Tag> tags) {
+//        for (Tag t : tags) {
+//            this.removeTag(t);
+//        }
+//    }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -117,11 +159,11 @@ public class GiftCertificate {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public List<Tag> getTags() {
+    public Set<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
 

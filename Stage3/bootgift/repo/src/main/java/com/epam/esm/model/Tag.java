@@ -1,17 +1,20 @@
 package com.epam.esm.model;
 
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tags")
@@ -19,30 +22,30 @@ public class Tag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
+    @Column(nullable = false, unique = true)
     private String name;
 
     @ManyToMany(mappedBy = "tags", cascade = {CascadeType.ALL})
-    private List<GiftCertificate> certificates = new ArrayList<>();
+    private Set<GiftCertificate> certificates = new HashSet<>();
 
     public Tag() {
     }
 
-    public Tag(long id, String name) {
-        this.id = id;
+    public Tag(String name) {
         this.name = name;
     }
 
-    public List<GiftCertificate> getCertificates() {
+    public Set<GiftCertificate> getCertificates() {
         return certificates;
     }
 
-    public void setCertificates(List<GiftCertificate> certificates) {
+    public void setCertificates(Set<GiftCertificate> certificates) {
         this.certificates = certificates;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -50,7 +53,7 @@ public class Tag {
         return name;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -58,7 +61,21 @@ public class Tag {
         this.name = name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
 
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Tag tag = (Tag) o;
+
+        return new EqualsBuilder().append(id, tag.id).append(name, tag.name).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(id).append(name).toHashCode();
+    }
 }
 
 
