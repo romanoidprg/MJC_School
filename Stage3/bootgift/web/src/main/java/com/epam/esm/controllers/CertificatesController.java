@@ -1,9 +1,9 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.GiftCertificate;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +38,7 @@ public class CertificatesController {
 
 
     @GetMapping(value = "/{id}")
-    public GiftCertificate readCertificateById(@PathVariable String id) throws NoSuchIdException {
+    public GiftCertificate readCertificateById(@PathVariable String id) throws LocalAppException {
         return certRepoService.readById(id);
     }
 

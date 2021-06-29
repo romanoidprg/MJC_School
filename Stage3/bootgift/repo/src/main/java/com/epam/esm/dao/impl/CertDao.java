@@ -59,9 +59,8 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
     @Override
     public GiftCertificate readById(long id) {
-        GiftCertificate result = null;
-
-        return result;
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(GiftCertificate.class, id);
     }
 
     @Override

@@ -2,7 +2,10 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.errors.LocalAppException;
+import com.epam.esm.errors.NoSuchCertIdException;
 import com.epam.esm.errors.NoSuchIdException;
+import com.epam.esm.errors.NoSuchTagIdException;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
@@ -15,13 +18,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 
 public class TagRepoService implements CommonService<Tag> {
 
@@ -48,14 +46,23 @@ public class TagRepoService implements CommonService<Tag> {
     }
 
     @Override
-    public Tag readById(String id) throws NoSuchIdException {
+    public Long create(String... params) throws LocalAppException {
+        return null;
+    }
+
+    @Override
+    public Tag readById(String id) throws LocalAppException {
+        Tag result;
         if (id.matches("[0-9]+")) {
-            return tagDao.readById(Long.parseLong(id));
+            result = tagDao.readById(Long.parseLong(id));
+            if (result==null) {
+                throw new NoSuchTagIdException(id);
+            }
         } else {
-            NoSuchIdException e = new NoSuchIdException("The gift certificate with id [" + id + "] doesn't exist.");
-            logger.error(e.getMessage());
-            throw e;
+            throw new NoSuchTagIdException(id);
         }
+        result.getCertificates().forEach(c -> c.setTags(null));
+        return result;
     }
 
     @Override

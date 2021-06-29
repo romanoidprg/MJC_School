@@ -1,14 +1,13 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.Tag;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,8 +37,8 @@ public class TagsController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
-    public Tag readTagById(@PathVariable String id) throws NoSuchIdException {
-        return tagRepoService.readById(id);
+    public Tag readTagById(@PathVariable String id) throws LocalAppException {
+            return tagRepoService.readById(id);
     }
 
     @RequestMapping(method = RequestMethod.GET)

@@ -1,6 +1,9 @@
 package com.epam.esm.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,14 +44,17 @@ public class GiftCertificate {
     private int duration;
 
     @Column(name = "create_date", nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private Date createDate;
 
     @Column(name = "last_update_date", nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private Date lastUpdateDate;
 
     @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<Tag> tags = new HashSet<>();
 
 

@@ -1,6 +1,6 @@
 package com.epam.esm.common_service;
 
-import com.epam.esm.errors.NoSuchIdException;
+import com.epam.esm.errors.LocalAppException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,7 +12,9 @@ public interface CommonService<T> {
 
     Long createFromJson(String jsonString) throws Exception;
 
-    T readById(String id) throws NoSuchIdException;
+    Long create (String... params) throws LocalAppException;
+
+    T readById(String id) throws LocalAppException;
 
     List<T> readByCriteria(String... params);
 

@@ -5,6 +5,7 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,11 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
     @Override
     public Tag readById(long id) {
         Session session = sessionFactory.getCurrentSession();
-        return session.get(Tag.class, id);
+        Tag result = session.get(Tag.class, id);
+        if (result != null) {
+            Hibernate.initialize(result.getCertificates());
+        }
+        return result;
     }
 
     @Override

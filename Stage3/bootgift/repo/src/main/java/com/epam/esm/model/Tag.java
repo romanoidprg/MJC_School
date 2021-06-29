@@ -1,6 +1,7 @@
 package com.epam.esm.model;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -28,6 +29,7 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags", cascade = {CascadeType.ALL})
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<GiftCertificate> certificates = new HashSet<>();
 
     public Tag() {

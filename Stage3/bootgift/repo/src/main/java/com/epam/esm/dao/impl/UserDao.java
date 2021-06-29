@@ -23,6 +23,8 @@ import java.util.List;
 @Transactional
 public class UserDao implements CommonDao<User, UserCriteria> {
 
+    private static final String IS_EXIST_SQL_QUERY = "SELECT * FROM users where name = :name";
+
     public UserDao() {
     }
 
@@ -42,13 +44,15 @@ public class UserDao implements CommonDao<User, UserCriteria> {
 
     @Override
     public User readById(long id) {
-        return null;
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(User.class, id);
     }
 
     @Override
     public List<User> readByCriteria(UserCriteria criteria) {
         return null;
     }
+
 
     @Override
     public boolean update(User entity) {
@@ -62,6 +66,10 @@ public class UserDao implements CommonDao<User, UserCriteria> {
 
     @Override
     public boolean isExist(User entity) {
-        return false;
+        Session s = sessionFactory.getCurrentSession();
+        return s.createSQLQuery(IS_EXIST_SQL_QUERY)
+                .setParameter("name", entity.getName())
+                .addEntity(User.class)
+                .stream().findAny().isPresent();
     }
 }

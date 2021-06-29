@@ -3,9 +3,13 @@ package com.epam.esm.common_service.impl;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.errors.EntityAlreadyExistException;
+import com.epam.esm.errors.LocalAppException;
+import com.epam.esm.errors.NoSuchCertIdException;
 import com.epam.esm.errors.NoSuchIdException;
+import com.epam.esm.errors.NoSuchOrderIdException;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 
 
 public class CertRepoService implements CommonService<GiftCertificate> {
@@ -53,6 +56,11 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             throw new EntityAlreadyExistException();
         }
         return id;
+    }
+
+    @Override
+    public Long create(String... params) throws LocalAppException {
+        return null;
     }
 
     @Override
@@ -94,12 +102,18 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     }
 
     @Override
-    public GiftCertificate readById(String id) throws NoSuchIdException {
+    public GiftCertificate readById(String id) throws LocalAppException {
+        GiftCertificate result;
         if (id.matches("[0-9]+")) {
-            return certDao.readById(Long.parseLong(id));
+            result = certDao.readById(Long.parseLong(id));
+            if (result==null) {
+                throw new NoSuchCertIdException(id);
+            }
         } else {
-            throw new NoSuchIdException("The gift certificate with id [" + id + "] doesn't exist.");
+            throw new NoSuchCertIdException(id);
         }
+        result.getTags().forEach(t -> t.setCertificates(null));
+        return result;
     }
 
     @Override

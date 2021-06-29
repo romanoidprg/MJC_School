@@ -1,5 +1,7 @@
 package com.epam.esm.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,23 +21,18 @@ public class Order {
     @GeneratedValue
     private Long id;
 
-//    @Column(name = "user_id", nullable = false)
-//    private Long userId;
-//
-//    @Column(name = "cert_id", nullable = false)
-//    private Long certId;
-
     @Column(nullable = false)
     private int cost;
 
     @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private Date timeStamp;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cert_id", nullable = false)
     private GiftCertificate cert;
 

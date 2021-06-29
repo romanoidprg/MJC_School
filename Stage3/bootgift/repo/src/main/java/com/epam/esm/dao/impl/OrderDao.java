@@ -41,7 +41,8 @@ public class OrderDao implements CommonDao<Order, OrderCriteria> {
 
     @Override
     public Order readById(long id) {
-        return null;
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(Order.class, id);
     }
 
     @Override

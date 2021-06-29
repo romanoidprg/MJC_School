@@ -1,14 +1,12 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.errors.LocalAppException;
+import com.epam.esm.errors.NoSuchOrderIdException;
 import com.epam.esm.model.Order;
-import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/v1/orders")
@@ -18,21 +16,23 @@ public class OrderController {
     @Qualifier("orderRepoService")
     CommonService<Order> orderRepoService;
 
-    @PostMapping
-    public Long createUser(@RequestBody String jsonString) throws Exception {
-        return orderRepoService.createFromJson(jsonString);
-    }
+//    @PostMapping
+//    public Long createOrder(@RequestBody String jsonString) throws Exception {
+//        return orderRepoService.createFromJson(jsonString);
+//    }
+
+
 
 //    @PostMapping(value = "/filltable")
 //    public boolean fillCertificateTable() throws Exception {
 //        return certRepoService.fillTable();
 //    }
 
-//
-//    @GetMapping(value = "/{id}")
-//    public User readUserById(@PathVariable String id) throws NoSuchIdException {
-//        return userRepoService.readById(id);
-//    }
+
+    @GetMapping(value = "/{id}")
+    public Order readOrderById(@PathVariable String id) throws LocalAppException {
+            return orderRepoService.readById(id);
+    }
 //
 //    @GetMapping
 //    public List<GiftCertificate> readCertificatesByParams(

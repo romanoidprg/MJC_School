@@ -14,6 +14,8 @@ dependencies {
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.3'
+
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
     implementation group: 'org.apache.tomcat', name: 'tomcat-jdbc', version: '10.0.6'
     

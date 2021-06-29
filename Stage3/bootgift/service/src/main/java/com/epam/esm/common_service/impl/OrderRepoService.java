@@ -2,11 +2,8 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
-import com.epam.esm.errors.EntityAlreadyExistException;
-import com.epam.esm.errors.NoSuchIdException;
-import com.epam.esm.model.GiftCertificate;
-import com.epam.esm.model.Order;
-import com.epam.esm.model.OrderCriteria;
+import com.epam.esm.errors.*;
+import com.epam.esm.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +25,14 @@ public class OrderRepoService implements CommonService<Order> {
     @Qualifier("orderDao")
     private CommonDao<Order, OrderCriteria> orderDao;
 
+    @Autowired
+    @Qualifier("userDao")
+    private CommonDao<User, UserCriteria> userDao;
+
+    @Autowired
+    @Qualifier("certDao")
+    private CommonDao<GiftCertificate, CertCriteria> certDao;
+
     @Override
     public Long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
         Long id;
@@ -44,9 +49,48 @@ public class OrderRepoService implements CommonService<Order> {
         return id;
     }
 
+
     @Override
-    public Order readById(String id) throws NoSuchIdException {
-        return null;
+    public Long create(String... params) throws LocalAppException {
+        String userId = params[0];
+        String certId = params[1];
+        if (userId.matches("[0-9]+")) {
+            if (certId.matches("[0-9]+")) {
+                Order order = new Order();
+                User user = userDao.readById(Long.parseLong(userId));
+                if (user==null) {
+                    throw new NoSuchUserIdException(userId);
+                }
+                order.setUser(user);
+                GiftCertificate cert = certDao.readById(Long.parseLong(certId));
+                if (cert == null) {
+                    throw new NoSuchCertIdException(certId);
+                }
+                    order.setCert(cert);
+                order.setCost(cert.getPrice());
+                order.setTimeStamp(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+                return orderDao.create(order);
+            } else {
+                throw new NoSuchCertIdException(certId);
+            }
+        } else {
+            throw new NoSuchUserIdException(userId);
+        }
+    }
+
+    @Override
+    public Order readById(String id) throws LocalAppException {
+        Order result;
+        if (id.matches("[0-9]+")) {
+            result = orderDao.readById(Long.parseLong(id));
+            if (result==null) {
+                throw new NoSuchOrderIdException(id);
+            }
+        } else {
+            throw new NoSuchOrderIdException(id);
+        }
+        result.getCert().getTags().forEach(t -> t.setCertificates(null));
+        return result;
     }
 
     @Override
