@@ -2,7 +2,6 @@ package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.errors.LocalAppException;
-import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.GiftCertificate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/v1/certificates")
@@ -39,7 +39,14 @@ public class CertificatesController {
 
     @GetMapping(value = "/{id}")
     public GiftCertificate readCertificateById(@PathVariable String id) throws LocalAppException {
-        return certRepoService.readById(id);
+        GiftCertificate result = certRepoService.readById(id);
+        return result;
+    }
+
+    @PostMapping(value = "/{id}")
+    public boolean changeCertificateField(@PathVariable String id,
+            @RequestParam Map<String,String> params) throws LocalAppException {
+            return certRepoService.updateField(id, params);
     }
 
     @GetMapping
@@ -59,14 +66,14 @@ public class CertificatesController {
                 sortNameOrder, sortCrDateOrder, sortUpdDateOrder);
     }
 
-    @PutMapping
-    public boolean updateCertificate(@RequestBody String jsonString) {
-        return certRepoService.updateFromJson(jsonString);
+    @PutMapping(value = "/{id}")
+    public boolean updateCertificate(@PathVariable String id, @RequestBody String jsonString) throws LocalAppException {
+            return certRepoService.updateFromJson(id, jsonString);
     }
 
     @DeleteMapping(value = "/{id}")
-    public boolean deleteCertificate(@PathVariable String id) {
-        return certRepoService.deleteById(id);
+    public void deleteCertificate(@PathVariable String id) throws LocalAppException {
+            certRepoService.deleteById(id);
     }
 
 

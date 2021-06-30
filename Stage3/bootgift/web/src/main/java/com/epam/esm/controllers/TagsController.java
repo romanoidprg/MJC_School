@@ -2,7 +2,6 @@ package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.errors.LocalAppException;
-import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,7 +37,7 @@ public class TagsController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
     public Tag readTagById(@PathVariable String id) throws LocalAppException {
-            return tagRepoService.readById(id);
+        return tagRepoService.readById(id);
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -53,8 +52,8 @@ public class TagsController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseBody
-    public boolean deleteTag(@PathVariable String id) {
-        return tagRepoService.deleteById(id);
+    public void deleteTag(@PathVariable String id) throws LocalAppException {
+        tagRepoService.deleteById(id);
     }
 
 }

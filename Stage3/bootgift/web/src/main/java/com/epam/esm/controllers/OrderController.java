@@ -2,7 +2,6 @@ package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.errors.LocalAppException;
-import com.epam.esm.errors.NoSuchOrderIdException;
 import com.epam.esm.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,13 +15,6 @@ public class OrderController {
     @Qualifier("orderRepoService")
     CommonService<Order> orderRepoService;
 
-//    @PostMapping
-//    public Long createOrder(@RequestBody String jsonString) throws Exception {
-//        return orderRepoService.createFromJson(jsonString);
-//    }
-
-
-
 //    @PostMapping(value = "/filltable")
 //    public boolean fillCertificateTable() throws Exception {
 //        return certRepoService.fillTable();
@@ -33,33 +25,10 @@ public class OrderController {
     public Order readOrderById(@PathVariable String id) throws LocalAppException {
             return orderRepoService.readById(id);
     }
-//
-//    @GetMapping
-//    public List<GiftCertificate> readCertificatesByParams(
-//            @RequestParam(value = "tag_name", required = false) String tagName,
-//            @RequestParam(value = "name", required = false) String name,
-//            @RequestParam(value = "description", required = false) String description,
-//            @RequestParam(value = "sort_by_name", required = false) String sortByName,
-//            @RequestParam(value = "sort_by_cr_date", required = false) String sortByCrDate,
-//            @RequestParam(value = "sort_by_upd_date", required = false) String sortByUpdDate,
-//            @RequestParam(value = "sort_name_order", required = false) String sortNameOrder,
-//            @RequestParam(value = "sort_cr_date_order", required = false) String sortCrDateOrder,
-//            @RequestParam(value = "sort_upd_date_order", required = false) String sortUpdDateOrder) {
-//
-//        return userRepoService.readByCriteria(tagName, name, description,
-//                sortByName, sortByCrDate, sortByUpdDate,
-//                sortNameOrder, sortCrDateOrder, sortUpdDateOrder);
-//    }
-//
-//    @PutMapping
-//    public boolean updateCertificate(@RequestBody String jsonString) {
-//        return userRepoService.updateFromJson(jsonString);
-//    }
-//
-//    @DeleteMapping(value = "/{id}")
-//    public boolean deleteCertificate(@PathVariable String id) {
-//        return userRepoService.deleteById(id);
-//    }
+    @DeleteMapping(value = "/{id}")
+    public void deleteOrder(@PathVariable String id) throws LocalAppException{
+        orderRepoService.deleteById(id);
+    }
 
 
 }

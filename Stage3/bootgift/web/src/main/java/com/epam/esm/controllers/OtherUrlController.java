@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Controller
-@RequestMapping(value = {"/*","/v1/*","/v1/certificates/*", "/v1/tags/*"})
+@RequestMapping(value = {"/*","/v1/*","/v1/certificates/*", "/v1/tags/*", "/v1/users/*/*/*/"})
 public class OtherUrlController {
 
     private final Logger logger = LogManager.getLogger(OtherUrlController.class);

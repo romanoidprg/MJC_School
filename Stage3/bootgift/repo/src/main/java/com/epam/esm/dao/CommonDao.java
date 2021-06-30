@@ -12,7 +12,7 @@ public interface CommonDao<T, U> {
 
     boolean update(T entity);
 
-    boolean deleteById(long id);
+    void delete(T entity);
 
     boolean isExist(T entity);
 

@@ -7,6 +7,7 @@ import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,7 +45,7 @@ public class UserController {
 
     @GetMapping(value = "/{id}")
     public User readUserById(@PathVariable String id) throws LocalAppException {
-            return userRepoService.readById(id);
+        return userRepoService.readById(id);
     }
 
 
@@ -69,11 +70,11 @@ public class UserController {
 //    public boolean updateCertificate(@RequestBody String jsonString) {
 //        return userRepoService.updateFromJson(jsonString);
 //    }
-//
-//    @DeleteMapping(value = "/{id}")
-//    public boolean deleteCertificate(@PathVariable String id) {
-//        return userRepoService.deleteById(id);
-//    }
+
+    @DeleteMapping(value = "/{id}")
+    public void deleteCertificate(@PathVariable String id) throws LocalAppException {
+        userRepoService.deleteById(id);
+    }
 
 
 }

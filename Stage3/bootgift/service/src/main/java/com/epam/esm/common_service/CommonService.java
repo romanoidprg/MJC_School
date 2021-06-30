@@ -5,6 +5,7 @@ import com.epam.esm.errors.LocalAppException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -18,9 +19,11 @@ public interface CommonService<T> {
 
     List<T> readByCriteria(String... params);
 
-    boolean updateFromJson(String jsonString);
+    boolean updateFromJson(String id, String jsonString) throws LocalAppException;
 
-    boolean deleteById(String id);
+    boolean updateField(String id, Map<String, String> params) throws LocalAppException;
+
+    void deleteById(String id) throws LocalAppException;
 
     boolean fillTable();
 

@@ -2,14 +2,9 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
-import com.epam.esm.errors.EntityAlreadyExistException;
-import com.epam.esm.errors.LocalAppException;
-import com.epam.esm.errors.NoSuchCertIdException;
-import com.epam.esm.errors.NoSuchIdException;
-import com.epam.esm.errors.NoSuchOrderIdException;
+import com.epam.esm.errors.*;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
-import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,15 +13,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cglib.core.Local;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
 public class CertRepoService implements CommonService<GiftCertificate> {
@@ -51,11 +44,55 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             cert.setId(null);
             cert.setCreateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
             cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+            cert.setTags(refreshAndCorrectTags(cert));
             id = certDao.create(cert);
         } else {
             throw new EntityAlreadyExistException();
         }
         return id;
+    }
+
+    private Set<Tag> refreshAndCorrectTags(GiftCertificate cert) {
+        Set<Tag> newTags = new HashSet<>();
+        TagCriteria tagCriteria;
+        for (Tag t : cert.getTags()) {
+            if (!tagDao.isExist(t)) {
+                tagDao.create(t);
+                newTags.add(t);
+            } else {
+                tagCriteria = new TagCriteria(t.getName(), true, "asc");
+                newTags.add(tagDao.readByCriteria(tagCriteria).get(0));
+            }
+        }
+        return newTags;
+    }
+
+    @Override
+    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
+        boolean result = false;
+        if (id.matches("[0-9]+")) {
+            GiftCertificate oldCert = certDao.readById(Long.parseLong(id));
+            if (oldCert != null) {
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                GiftCertificate newCert;
+                try {
+                    newCert = objectMapper.readValue(jsonString, GiftCertificate.class);
+                    newCert.setId(oldCert.getId());
+                    newCert.setCreateDate(oldCert.getCreateDate());
+                    newCert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+                    newCert.setTags(refreshAndCorrectTags(newCert));
+                    result = certDao.update(newCert);
+                } catch (JsonProcessingException e) {
+                    logger.error(e.getMessage());
+                }
+            } else {
+                throw new EntityAlreadyExistException();
+            }
+        } else {
+            throw new NoSuchCertIdException(id);
+        }
+        return result;
     }
 
     @Override
@@ -83,11 +120,11 @@ public class CertRepoService implements CommonService<GiftCertificate> {
                 cert.setDuration(new Random().nextInt(365));
                 cert.setCreateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
                 cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
-                tagCol = r1.nextInt(4)+1;
+                tagCol = r1.nextInt(4) + 1;
                 for (int j = 0; j < tagCol; j++) {
-                    id = r2.nextInt(999)+1;
+                    id = r2.nextInt(999) + 1;
                     t = tagDao.readById(id);
-                    if (t==null) {
+                    if (t == null) {
                         throw new NoSuchIdException("Tag with id [" + id + "] doesn't exist.");
                     }
                     cert.getTags().add(t);
@@ -106,7 +143,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
         GiftCertificate result;
         if (id.matches("[0-9]+")) {
             result = certDao.readById(Long.parseLong(id));
-            if (result==null) {
+            if (result == null) {
                 throw new NoSuchCertIdException(id);
             }
         } else {
@@ -141,28 +178,52 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     }
 
     @Override
-    public boolean updateFromJson(String jsonString) {
-        boolean result = false;
-        ObjectMapper objectMapper = new ObjectMapper();
-        GiftCertificate cert;
-        try {
-            cert = objectMapper.readValue(jsonString, GiftCertificate.class);
-            result = certDao.update(cert);
-        } catch (JsonProcessingException e) {
-            logger.error(e.getMessage());
-            e.getMessage();
+    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
+        if (!id.matches("[0-9]+")) {
+            throw new NoSuchCertIdException(id);
         }
-        return result;
+        if (params.size() != 1) {
+            throw new IncorrectAmountOfCertFieldsException();
+        }
+
+        GiftCertificate cert = certDao.readById(Long.parseLong(id));
+        if (cert == null) {
+            throw new NoSuchCertIdException(id);
+        }
+        fillCert(cert, params);
+        cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+        return certDao.update(cert);
+    }
+
+    private void fillCert(GiftCertificate cert, Map<String, String> params) {
+        String name = params.get("name");
+        String description = params.get("description");
+        String duration = params.get("duration");
+        String price = params.get("price");
+        if (duration != null) {
+            if (!duration.matches("[0-9]+")) {
+                throw new NumberFormatException("Incorrect format of the certificate field");
+            } else {
+                cert.setDuration(Integer.parseInt(duration));
+            }
+        }
+        if (price != null) {
+            if (!price.matches("[0-9]+")) {
+                throw new NumberFormatException("Incorrect format of the certificate field");
+            } else {
+                cert.setPrice(Integer.parseInt(price));
+            }
+        }
+        if (name != null) {
+            cert.setName(name);
+        }
+        if (description != null) {
+            cert.setDescription(description);
+        }
     }
 
     @Override
-    public boolean deleteById(String id) {
-        boolean result = false;
-        try {
-            result = certDao.deleteById(Long.parseLong(id));
-        } catch (NumberFormatException e) {
-            logger.error(e.getMessage());
-        }
-        return result;
+    public void deleteById(String id) throws LocalAppException {
+        certDao.delete(readById(id));
     }
 }

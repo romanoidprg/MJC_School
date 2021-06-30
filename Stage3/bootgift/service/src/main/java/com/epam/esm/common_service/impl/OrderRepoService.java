@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 public class OrderRepoService implements CommonService<Order> {
@@ -58,7 +59,7 @@ public class OrderRepoService implements CommonService<Order> {
             if (certId.matches("[0-9]+")) {
                 Order order = new Order();
                 User user = userDao.readById(Long.parseLong(userId));
-                if (user==null) {
+                if (user == null) {
                     throw new NoSuchUserIdException(userId);
                 }
                 order.setUser(user);
@@ -66,7 +67,7 @@ public class OrderRepoService implements CommonService<Order> {
                 if (cert == null) {
                     throw new NoSuchCertIdException(certId);
                 }
-                    order.setCert(cert);
+                order.setCert(cert);
                 order.setCost(cert.getPrice());
                 order.setTimeStamp(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
                 return orderDao.create(order);
@@ -83,7 +84,7 @@ public class OrderRepoService implements CommonService<Order> {
         Order result;
         if (id.matches("[0-9]+")) {
             result = orderDao.readById(Long.parseLong(id));
-            if (result==null) {
+            if (result == null) {
                 throw new NoSuchOrderIdException(id);
             }
         } else {
@@ -99,13 +100,18 @@ public class OrderRepoService implements CommonService<Order> {
     }
 
     @Override
-    public boolean updateFromJson(String jsonString) {
+    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
         return false;
     }
 
     @Override
-    public boolean deleteById(String id) {
+    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
         return false;
+    }
+
+    @Override
+    public void deleteById(String id) throws LocalAppException {
+                orderDao.delete(readById(id));
     }
 
     @Override

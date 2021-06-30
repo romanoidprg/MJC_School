@@ -2,11 +2,9 @@ package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.errors.EntityAlreadyExistException;
 import com.epam.esm.errors.LocalAppException;
-import com.epam.esm.errors.NoSuchCertIdException;
-import com.epam.esm.errors.NoSuchIdException;
 import com.epam.esm.errors.NoSuchTagIdException;
-import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.TagCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +18,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TagRepoService implements CommonService<Tag> {
 
@@ -32,15 +31,15 @@ public class TagRepoService implements CommonService<Tag> {
     private CommonDao<Tag, TagCriteria> tagDao;
 
     @Override
-    public Long createFromJson(String jsonString) throws JsonProcessingException {
-        Long id;
+    public Long createFromJson(String jsonString) throws EntityAlreadyExistException, JsonProcessingException {
+        Long id = null;
         ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            Tag tag = objectMapper.readValue(jsonString, Tag.class);
+        Tag tag = objectMapper.readValue(jsonString, Tag.class);
+        tag.setCertificates(null);
+        if (!tagDao.isExist(tag)) {
             id = tagDao.create(tag);
-        } catch (JsonProcessingException e) {
-            logger.error(e.getMessage());
-            throw e;
+        } else {
+            throw new EntityAlreadyExistException();
         }
         return id;
     }
@@ -55,7 +54,7 @@ public class TagRepoService implements CommonService<Tag> {
         Tag result;
         if (id.matches("[0-9]+")) {
             result = tagDao.readById(Long.parseLong(id));
-            if (result==null) {
+            if (result == null) {
                 throw new NoSuchTagIdException(id);
             }
         } else {
@@ -80,19 +79,18 @@ public class TagRepoService implements CommonService<Tag> {
     }
 
     @Override
-    public boolean updateFromJson(String jsonString) {
+    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
         return false;
     }
 
     @Override
-    public boolean deleteById(String id) {
-        boolean result = false;
-        try {
-            result = tagDao.deleteById(Long.parseLong(id));
-        } catch (NumberFormatException e) {
-            logger.error(e.getMessage());
-        }
-        return result;
+    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
+        return false;
+    }
+
+    @Override
+    public void deleteById(String id) throws LocalAppException {
+        tagDao.delete(readById(id));
     }
 
     @Override

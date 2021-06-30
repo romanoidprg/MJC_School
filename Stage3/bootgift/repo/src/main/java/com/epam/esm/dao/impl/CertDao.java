@@ -77,12 +77,18 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     @Override
     public boolean update(GiftCertificate updCert) {
         boolean result = false;
+        Session session = sessionFactory.getCurrentSession();
+        try {
+            session.update(updCert);
+            result = true;
+        } catch (Exception e){
+            logger.error(e.getMessage());
+        }
         return result;
     }
 
     @Override
-    public boolean deleteById(long id) {
-        boolean result = false;
-        return result;
+    public void delete(GiftCertificate entity) {
+        sessionFactory.getCurrentSession().delete(entity);
     }
 }

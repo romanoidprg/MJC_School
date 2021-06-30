@@ -3,7 +3,6 @@ package com.epam.esm.common_service.impl;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.errors.*;
-import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 import com.epam.esm.model.UserCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Map;
 
 
 public class UserRepoService implements CommonService<User> {
@@ -33,7 +33,6 @@ public class UserRepoService implements CommonService<User> {
         ObjectMapper objectMapper = new ObjectMapper();
         User user = objectMapper.readValue(jsonString, User.class);
         if (!userDao.isExist(user)) {
-            user.setId(null);
             id = userDao.create(user);
         } else {
             throw new EntityAlreadyExistException();
@@ -58,7 +57,6 @@ public class UserRepoService implements CommonService<User> {
         } else {
             throw new NoSuchUserIdException(id);
         }
-//        result.getCertificates().forEach(c -> c.setTags(null));
         return result;
     }
 
@@ -68,13 +66,18 @@ public class UserRepoService implements CommonService<User> {
     }
 
     @Override
-    public boolean updateFromJson(String jsonString) {
+    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
         return false;
     }
 
     @Override
-    public boolean deleteById(String id) {
+    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
         return false;
+    }
+
+    @Override
+    public void deleteById(String id) throws LocalAppException {
+        userDao.delete(readById(id));
     }
 
     @Override
