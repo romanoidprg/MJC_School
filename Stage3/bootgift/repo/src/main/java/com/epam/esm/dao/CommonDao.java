@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface CommonDao<T, U> {
 
-    Long create(T entity);
+    long create(T entity);
 
     T readById(long id);
 

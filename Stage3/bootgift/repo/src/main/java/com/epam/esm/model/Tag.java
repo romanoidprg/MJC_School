@@ -8,7 +8,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,7 +18,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tags")
-public class Tag {
+public class Tag  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

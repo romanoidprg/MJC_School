@@ -28,7 +28,7 @@ public class UserDao implements CommonDao<User, UserCriteria> {
     SessionFactory sessionFactory;
 
     @Override
-    public Long create(User entity) {
+    public long create(User entity) {
         Long id;
         Session session = sessionFactory.getCurrentSession();
         id = (Long) session.save(entity);

@@ -25,10 +25,10 @@ public class TagDao implements CommonDao<Tag, TagCriteria> {
     SessionFactory sessionFactory;
 
     @Override
-    public Long create(Tag entity) {
-        Long id;
+    public long create(Tag entity) {
+        long id;
         Session session = sessionFactory.getCurrentSession();
-        id = (Long) session.save(entity);
+        id = (long) session.save(entity);
         return id;
     }
 

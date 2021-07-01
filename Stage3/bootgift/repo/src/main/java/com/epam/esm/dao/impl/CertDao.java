@@ -32,7 +32,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     SessionFactory sessionFactory;
 
     @Override
-    public Long create(GiftCertificate entity) {
+    public long create(GiftCertificate entity) {
         Long id;
         Session session = sessionFactory.getCurrentSession();
         id = (Long) session.save(entity);

@@ -31,8 +31,8 @@ public class TagRepoService implements CommonService<Tag> {
     private CommonDao<Tag, TagCriteria> tagDao;
 
     @Override
-    public Long createFromJson(String jsonString) throws EntityAlreadyExistException, JsonProcessingException {
-        Long id = null;
+    public long createFromJson(String jsonString) throws EntityAlreadyExistException, JsonProcessingException {
+        long id;
         ObjectMapper objectMapper = new ObjectMapper();
         Tag tag = objectMapper.readValue(jsonString, Tag.class);
         tag.setCertificates(null);
@@ -108,6 +108,14 @@ public class TagRepoService implements CommonService<Tag> {
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
         }
+        return result;
+    }
+
+    public List<Tag> getMostUsedTagsOfUserWithMostExpensiveOrdersCost(){
+        List<Tag> result= new ArrayList<>();
+        result.add(new Tag("Agors"));
+        result.add(new Tag("Begora"));
+
         return result;
     }
 

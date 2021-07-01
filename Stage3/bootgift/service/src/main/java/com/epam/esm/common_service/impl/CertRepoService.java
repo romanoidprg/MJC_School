@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cglib.core.Local;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,7 +35,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     private CommonDao<Tag, TagCriteria> tagDao;
 
     @Override
-    public Long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
+    public long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
         Long id;
         ObjectMapper objectMapper = new ObjectMapper();
         GiftCertificate cert = objectMapper.readValue(jsonString, GiftCertificate.class);

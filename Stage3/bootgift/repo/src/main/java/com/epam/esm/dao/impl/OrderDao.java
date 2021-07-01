@@ -26,7 +26,7 @@ public class OrderDao implements CommonDao<Order, OrderCriteria> {
     SessionFactory sessionFactory;
 
     @Override
-    public Long create(Order entity) {
+    public long create(Order entity) {
         Long id;
         Session session = sessionFactory.getCurrentSession();
         id = (Long) session.save(entity);

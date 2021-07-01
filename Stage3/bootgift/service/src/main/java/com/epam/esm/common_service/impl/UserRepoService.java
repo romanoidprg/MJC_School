@@ -28,7 +28,7 @@ public class UserRepoService implements CommonService<User> {
     private CommonDao<User, UserCriteria> userDao;
 
     @Override
-    public Long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
+    public long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
         Long id;
         ObjectMapper objectMapper = new ObjectMapper();
         User user = objectMapper.readValue(jsonString, User.class);

@@ -35,7 +35,7 @@ public class OrderRepoService implements CommonService<Order> {
     private CommonDao<GiftCertificate, CertCriteria> certDao;
 
     @Override
-    public Long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
+    public long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
         Long id;
         ObjectMapper objectMapper = new ObjectMapper();
         Order order = objectMapper.readValue(jsonString, Order.class);

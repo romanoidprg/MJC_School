@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public interface CommonService<T> {
 
-    Long createFromJson(String jsonString) throws Exception;
+    long createFromJson(String jsonString) throws Exception;
 
     Long create (String... params) throws LocalAppException;
 
