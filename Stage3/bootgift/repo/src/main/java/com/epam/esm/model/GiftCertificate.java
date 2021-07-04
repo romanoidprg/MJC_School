@@ -3,6 +3,8 @@ package com.epam.esm.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -51,7 +53,7 @@ public class GiftCertificate {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private Date lastUpdateDate;
 
-    @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH}, fetch = FetchType.EAGER)
     @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,11 @@ public class UserDao implements CommonDao<User, UserCriteria> {
         return id;
     }
 
+    @Override
+    public List<User> readAll() {
+        return null;
+    }
+
 
     @Override
     public User readById(long id) {
@@ -43,7 +49,7 @@ public class UserDao implements CommonDao<User, UserCriteria> {
     }
 
     @Override
-    public List<User> readByCriteria(UserCriteria criteria) {
+    public List<User> readByCriteria(Pageable pageable, UserCriteria criteria) {
         return null;
     }
 

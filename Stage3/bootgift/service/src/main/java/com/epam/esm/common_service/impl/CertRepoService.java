@@ -13,6 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -60,7 +63,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
                 newTags.add(t);
             } else {
                 tagCriteria = new TagCriteria(t.getName(), true, "asc");
-                newTags.add(tagDao.readByCriteria(tagCriteria).get(0));
+                newTags.add(tagDao.readByCriteria(PageRequest.of(1,10), tagCriteria).get(0));
             }
         }
         return newTags;
@@ -153,7 +156,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     }
 
     @Override
-    public List<GiftCertificate> readByCriteria(String... params) {
+    public List<GiftCertificate> readByCriteria(Pageable pageable, String... params) {
         List<GiftCertificate> result = new ArrayList<>();
         if (params.length > 8) {
             String tagName = params[0];
@@ -166,12 +169,13 @@ public class CertRepoService implements CommonService<GiftCertificate> {
             String sortCrDateOrder = params[7];
             String sortUpdDateOrder = params[8];
 
-            result = certDao.readByCriteria(
+            result = certDao.readByCriteria(pageable,
                     new CertCriteria(tagName, name, description,
                             Boolean.parseBoolean(sortByName),
                             Boolean.parseBoolean(sortByCrDate),
                             Boolean.parseBoolean(sortByUpdDate),
                             sortNameOrder, sortCrDateOrder, sortUpdDateOrder));
+            result.forEach(c -> c.getTags().forEach(tag -> tag.setCertificates(null)));
         }
         return result;
     }

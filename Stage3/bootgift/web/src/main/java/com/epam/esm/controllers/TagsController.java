@@ -1,11 +1,14 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.common_service.impl.TagRepoService;
+import com.epam.esm.common_service.CustomTagServise;
 import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -23,18 +26,26 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping(value = "/v1/tags")
 public class TagsController {
 
-    private static final String REL_READ_BY_ID = "Read tag by id.";
-    private static final String REL_DELETE_TAG = "Delete tag";
+    private static final String REL_READ_BY_ID = "Read this tag.";
+    private static final String REL_DELETE_TAG = "Delete this tag";
     private static final String TAG_ID = "tag_id";
     public static final String TAG_IN_JSON_FORMAT = "tag_in_json_format";
     public static final String REL_CREATE_TAG_FROM_JSON_FORMAT = "Create tag from json format";
-    public static final String WUTUHCO = "Get the most widely used tag of a user with the highest cost of all orders.";
+    public static final String REL_WUTUHCO = "Get the most widely used tag of a user with the highest cost of all orders.";
     public static final String READ_1_ST_TAG = "Read 1-st tag.";
+    public static final String REL_READ_PARAMS = "Read tag with params";
+    public static final String DEF_PAGE = "1";
+    public static final String DEF_P_SIZE = "5";
+    public static final String REL_NEXT_PAGE = "Next page";
 
 
     @Autowired
     @Qualifier("tagRepoService")
     CommonService<Tag> tagRepoService;
+
+    @Autowired
+    @Qualifier("customTagRepoService")
+    CustomTagServise<Tag> customTagRepoService;
 
     @PostMapping
     public Long createTag(@RequestBody String jsonString) throws Exception {
@@ -43,12 +54,37 @@ public class TagsController {
 
 
     @GetMapping
-    public List<Tag> readTagByParams(
+    public CollectionModel<EntityModel<Tag>> readTagByParams(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "sort_by_name", required = false) String sortByName,
-            @RequestParam(value = "sort_order", required = false) String sortOrder) {
+            @RequestParam(value = "sort_order", required = false) String sortOrder,
+            @RequestParam(value = "page", required = false) String page,
+            @RequestParam(value = "page_size", required = false) String pSize
+    ) throws Exception {
+        page = page == null ? DEF_PAGE : page;
+        pSize = pSize == null ? DEF_P_SIZE : pSize;
+        Pageable pageable = PageRequest.of(Integer.parseInt(page), Integer.parseInt(pSize));
 
-        return tagRepoService.readByCriteria(name, sortByName, sortOrder);
+        List<Tag> tagList = tagRepoService.readByCriteria(pageable, name, sortByName, sortOrder);
+
+        List<EntityModel<Tag>> entTags = new ArrayList<>();
+        for (Tag t : tagList) {
+            t.setCertificates(null);
+            entTags.add(EntityModel.of(t,
+                    getLinkRead(t.getId()),
+                    getLinkDel(t.getId())));
+        }
+        PageImpl<EntityModel<Tag>> pager = new PageImpl(entTags, pageable, entTags.size());
+
+        CollectionModel<EntityModel<Tag>> collEntTags = CollectionModel.of(pager,
+                getLinkReadParams(name, sortByName, sortOrder, page, pSize).expand().withSelfRel(),
+                getLinkReadParamsNP(name, sortByName, sortOrder,
+                        String.valueOf(pageable.next().getPageNumber()), String.valueOf(pageable.getPageSize())).expand(),
+                getLinkReadParamsPP(name, sortByName, sortOrder,
+                        String.valueOf(pageable.previousOrFirst().getPageNumber()), String.valueOf(pageable.getPageSize())).expand(),
+                getLinkWutuhco()
+        );
+        return collEntTags;
     }
 
     @DeleteMapping(value = "/{id}")
@@ -58,17 +94,20 @@ public class TagsController {
     }
 
     @GetMapping(value = "/wutuhco")
-    public CollectionModel<Tag> getWutuhco() throws Exception {
-        List<Tag> tagList = ((TagRepoService) tagRepoService).getMostUsedTagsOfUserWithMostExpensiveOrdersCost();
-        CollectionModel<Tag> tags = CollectionModel.empty();
-        for(Tag t: tagList){
-            tags.ad
+    public CollectionModel<EntityModel<Tag>> getWutuhco() throws Exception {
+        List<Tag> tagList = customTagRepoService.getMostUsedTagsOfUserWithMostExpensiveOrdersCost();
+        List<EntityModel<Tag>> entTags = new ArrayList<>();
+        for (Tag t : tagList) {
+            t.setCertificates(null);
+            entTags.add(EntityModel.of(t,
+                    getLinkRead(t.getId()),
+                    getLinkDel(t.getId())));
         }
-        CollectionModel<Tag> tags = CollectionModel.of(tagList,
-                linkTo(methodOn(TagsController.class).readTagById("1")).withRel(READ_1_ST_TAG),
-                linkTo(methodOn(TagsController.class).getWutuhco()).withSelfRel(),
-                linkTo(methodOn(TagsController.class).deleteTag(TAG_ID)).withRel(REL_DELETE_TAG));
-        return tags;
+        CollectionModel<EntityModel<Tag>> collEntTags = CollectionModel.of(entTags,
+                getLinkWutuhco().withSelfRel(),
+                getLinkReadParams("", "true", "asc",  DEF_PAGE, DEF_P_SIZE)
+        );
+        return collEntTags;
     }
 
     @GetMapping(value = "/{id}")
@@ -76,10 +115,35 @@ public class TagsController {
         Tag tag = tagRepoService.readById(id);
         tag.setCertificates(null);
         EntityModel<Tag> tagEM = EntityModel.of(tag,
-                linkTo(methodOn(TagsController.class).readTagById(id)).withSelfRel(),
-                linkTo(methodOn(TagsController.class).getWutuhco()).withRel(WUTUHCO),
-                linkTo(methodOn(TagsController.class).deleteTag(id)).withRel(REL_DELETE_TAG));
+                getLinkRead(Long.parseLong(id)).withSelfRel(),
+                getLinkWutuhco(),
+                getLinkReadParams("", "true", "asc", DEF_PAGE, DEF_P_SIZE),
+                getLinkDel(Long.parseLong(id)));
         return tagEM;
+    }
+
+    private Link getLinkWutuhco() throws Exception {
+        return linkTo(methodOn(TagsController.class).getWutuhco()).withRel(REL_WUTUHCO);
+    }
+
+    private Link getLinkDel(Long id) throws LocalAppException {
+        return linkTo(methodOn(TagsController.class).deleteTag(String.valueOf(id))).withRel(REL_DELETE_TAG);
+    }
+
+    private Link getLinkReadParams(String name, String sortByName, String sortOrder, String page, String pSize) throws Exception {
+        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page,pSize)).withRel(REL_READ_PARAMS);
+    }
+
+    private Link getLinkRead(Long id) throws Exception {
+        return linkTo(methodOn(TagsController.class).readTagById(String.valueOf(id))).withRel(REL_READ_BY_ID);
+    }
+
+    private Link getLinkReadParamsNP(String name, String sortByName, String sortOrder, String page, String pSize) throws Exception {
+        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page,pSize)).withRel(REL_NEXT_PAGE);
+    }
+
+    private Link getLinkReadParamsPP(String name, String sortByName, String sortOrder, String page, String pSize) throws Exception {
+        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page,pSize)).withRel("Previous page");
     }
 
 }

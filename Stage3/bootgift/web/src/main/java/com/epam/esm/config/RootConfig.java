@@ -1,15 +1,18 @@
 package com.epam.esm.config;
 
+import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomTagServise;
 import com.epam.esm.common_service.impl.CertRepoService;
 import com.epam.esm.common_service.impl.OrderRepoService;
 import com.epam.esm.common_service.impl.TagRepoService;
 import com.epam.esm.common_service.impl.UserRepoService;
+import com.epam.esm.dao.CommonDao;
+import com.epam.esm.dao.CustomTagDao;
 import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.dao.impl.OrderDao;
 import com.epam.esm.dao.impl.TagDao;
 import com.epam.esm.dao.impl.UserDao;
-import com.epam.esm.model.GiftCertificate;
-import com.epam.esm.model.Tag;
+import com.epam.esm.model.*;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -75,42 +77,52 @@ public class RootConfig {
     }
 
     @Bean
-    public CertRepoService certRepoService() {
+    public CommonService<GiftCertificate> certRepoService() {
         return new CertRepoService();
     }
 
     @Bean
-    public UserRepoService userRepoService() {
+    public CommonService<User> userRepoService() {
         return new UserRepoService();
     }
 
     @Bean
-    public OrderRepoService orderRepoService() {
+    public CommonService<Order> orderRepoService() {
         return new OrderRepoService();
     }
 
     @Bean
-    public TagRepoService tagRepoService() {
+    public CommonService<Tag> tagRepoService() {
         return new TagRepoService();
     }
 
     @Bean
-    public CertDao certDao() {
+    public CustomTagServise<Tag> customTagRepoService() {
+        return new TagRepoService();
+    }
+
+    @Bean
+    public CommonDao<GiftCertificate, CertCriteria> certDao() {
         return new CertDao();
     }
 
     @Bean
-    public TagDao tagDao() {
+    public CommonDao<Tag, TagCriteria> tagDao() {
         return new TagDao();
     }
 
     @Bean
-    public OrderDao orderDao() {
+    public CustomTagDao<Tag> customTagDao() {
+        return new TagDao();
+    }
+
+    @Bean
+    public CommonDao<Order, OrderCriteria> orderDao() {
         return new OrderDao();
     }
 
     @Bean
-    public UserDao userDao() {
+    public CommonDao<User, UserCriteria> userDao() {
         return new UserDao();
     }
 

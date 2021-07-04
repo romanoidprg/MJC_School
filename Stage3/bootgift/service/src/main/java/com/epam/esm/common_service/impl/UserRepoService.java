@@ -11,6 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -61,7 +63,7 @@ public class UserRepoService implements CommonService<User> {
     }
 
     @Override
-    public List<User> readByCriteria(String... params) {
+    public List<User> readByCriteria(Pageable pageable, String... params) {
         return null;
     }
 

@@ -1,6 +1,8 @@
 package com.epam.esm.common_service;
 
 import com.epam.esm.errors.LocalAppException;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +19,7 @@ public interface CommonService<T> {
 
     T readById(String id) throws LocalAppException;
 
-    List<T> readByCriteria(String... params);
+    List<T> readByCriteria(Pageable pageable, String... params);
 
     boolean updateFromJson(String id, String jsonString) throws LocalAppException;
 
@@ -26,6 +28,7 @@ public interface CommonService<T> {
     void deleteById(String id) throws LocalAppException;
 
     boolean fillTable();
+
 
     default int getWordsAmount(File file) throws FileNotFoundException {
         Scanner scanner = new Scanner(file);

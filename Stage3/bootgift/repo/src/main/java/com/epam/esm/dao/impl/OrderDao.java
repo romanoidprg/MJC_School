@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +35,18 @@ public class OrderDao implements CommonDao<Order, OrderCriteria> {
     }
 
     @Override
+    public List<Order> readAll() {
+        return null;
+    }
+
+    @Override
     public Order readById(long id) {
         Session session = sessionFactory.getCurrentSession();
         return session.get(Order.class, id);
     }
 
     @Override
-    public List<Order> readByCriteria(OrderCriteria criteria) {
+    public List<Order> readByCriteria(Pageable pageable, OrderCriteria criteria) {
         return null;
     }
 
