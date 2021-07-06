@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,16 +28,27 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
             "certificates AS c Right JOIN (SELECT * from certs_tags AS ct " +
             "LEFT JOIN tags AS t ON ct.tag_id=t.id WHERE t.name LIKE :tName) AS tab ON c.id=tab.cert_id " +
             "WHERE c.name LIKE :cName AND c.description LIKE :cDesc ORDER BY ";
+    private static final String SQL_READ_COUNT_CERT_BY_CRITERIA = "SELECT  COUNT(*) FROM " +
+            "certificates AS c Right JOIN (SELECT * from certs_tags AS ct " +
+            "LEFT JOIN tags AS t ON ct.tag_id=t.id WHERE t.name LIKE :tName) AS tab ON c.id=tab.cert_id " +
+            "WHERE c.name LIKE :cName AND c.description LIKE :cDesc ";
     private static final String SQL_READ_CERT_BY_CRITERIA_ANY_TAG = "SELECT c.* FROM " +
             "certificates AS c WHERE c.name LIKE :cName AND c.description LIKE :cDesc ORDER BY ";
+    private static final String SQL_READ_COUNT_CERT_BY_CRITERIA_ANY_TAG = "SELECT COUNT(*) FROM " +
+            "certificates AS c WHERE c.name LIKE :cName AND c.description LIKE :cDesc ";
 
     private static final String SQL_NAME = "c.name ";
     private static final String SQL_CREATE_DATE = "c.create_date ";
     private static final String SQL_UPDATE_DATE = "c.last_update_date ";
     private static final String SQL_ID = "c.id";
 
+    private static final String PAGINATION = " LIMIT :p_size OFFSET :page ";
+
+
     public CertDao() {
     }
+
+    private Long lastQueryCount = 0L;
 
     private final Logger logger = LogManager.getLogger(CertDao.class);
 
@@ -69,6 +81,11 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
 
     }
 
+    @Override
+    public Long getLastQueryCount() {
+        return lastQueryCount;
+    }
+
     private long getTagIdIfTagWithNameExist(String name, Connection c) throws SQLException {
         long result = -1;
         return result;
@@ -77,6 +94,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     @Override
     public GiftCertificate readById(long id) {
         Session session = sessionFactory.getCurrentSession();
+        lastQueryCount = 1L;
         return session.get(GiftCertificate.class, id);
     }
 
@@ -85,15 +103,28 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
         List<GiftCertificate> result = new ArrayList<>();
         Session session = sessionFactory.getCurrentSession();
         if (criteria.getTagName() != "") {
+            lastQueryCount = ((BigInteger) session.createSQLQuery(SQL_READ_COUNT_CERT_BY_CRITERIA)
+                    .setParameter("tName", "%" + criteria.getTagName() + "%")
+                    .setParameter("cName", "%" + criteria.getName() + "%")
+                    .setParameter("cDesc", "%" + criteria.getDescription() + "%")
+                    .list().get(0)).longValue();
             result = session.createSQLQuery(prepareSQLFromCriteria(criteria))
                     .setParameter("tName", "%" + criteria.getTagName() + "%")
                     .setParameter("cName", "%" + criteria.getName() + "%")
                     .setParameter("cDesc", "%" + criteria.getDescription() + "%")
+                    .setParameter("page", pageable.getOffset())
+                    .setParameter("p_size", pageable.getPageSize())
                     .addEntity(GiftCertificate.class).list();
         } else {
+            lastQueryCount = ((BigInteger) session.createSQLQuery(SQL_READ_COUNT_CERT_BY_CRITERIA_ANY_TAG)
+                    .setParameter("cName", "%" + criteria.getName() + "%")
+                    .setParameter("cDesc", "%" + criteria.getDescription() + "%")
+                    .list().get(0)).longValue();
             result = session.createSQLQuery(prepareSQLFromCriteria(criteria))
                     .setParameter("cName", "%" + criteria.getName() + "%")
                     .setParameter("cDesc", "%" + criteria.getDescription() + "%")
+                    .setParameter("page", pageable.getOffset())
+                    .setParameter("p_size", pageable.getPageSize())
                     .addEntity(GiftCertificate.class).list();
         }
         return result;
@@ -136,7 +167,7 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
         if (sortById) {
             result.append(SQL_ID);
         }
-
+        result.append(PAGINATION);
         return result.toString();
     }
 

@@ -23,4 +23,5 @@ public class TagCriteria {
     public String getSortOrder() {
         return sortOrder;
     }
+
 }

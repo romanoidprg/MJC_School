@@ -20,4 +20,6 @@ public interface CommonDao<T, U> {
 
     boolean isExist(T entity);
 
+    Long getLastQueryCount();
+
 }

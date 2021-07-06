@@ -27,18 +27,22 @@ public class TagDao implements CommonDao<Tag, TagCriteria>, CustomTagDao {
             "(select user_id, sum(cost) as summa from orders group by user_id) as t1 " +
             "where t1.summa = " +
             "(select max(t2.summa) from " +
-            "(select user_id, sum(cost) as summa from orders group by user_id) as t2)";
+            "(select user_id, sum(cost) as summa from orders group by user_id) as t2) ";
     private static final String WUTUHCO_GET_TAGS_SQL = "SELECT t6.tag_id FROM " +
             "(SELECT t4.*, count(t4.tag_id) as count FROM orders as t3 " +
             "LEFT JOIN certs_tags as t4 on t3.cert_id=t4.cert_id WHERE user_id=:userId GROUP BY t4.tag_id) as t6 " +
             "WHERE t6.count=(SELECT MAX(t5.count) from " +
             "(SELECT t4.*, count(t4.tag_id) as count FROM orders as t3 " +
-            "LEFT JOIN certs_tags as t4 on t3.cert_id=t4.cert_id WHERE user_id=:userId GROUP BY t4.tag_id) as t5)";
+            "LEFT JOIN certs_tags as t4 on t3.cert_id=t4.cert_id WHERE user_id=:userId GROUP BY t4.tag_id) as t5) ";
     private static final String SQL_READ_TAG_BY_CRITERIA = "SELECT * FROM tags WHERE name LIKE :name ORDER BY ";
+    private static final String SQL_READ_COUNT_TAG_BY_CRITERIA = "SELECT COUNT(*) FROM tags WHERE name LIKE :name ";
     private static final String SQL_ID = "id ";
     private static final String SQL_NAME = "name ";
-    public static final String SQL_READ_ALL_TAGS = "SELECT * FROM tags ORDER BY id ASC";
-    public static final String PAGINATION = "LIMIT :p_size OFFSET :page";
+    private static final String SQL_READ_ALL_TAGS = "SELECT * FROM tags ORDER BY id ASC ";
+    private static final String SQL_COUNT_READ_ALL_TAGS = "SELECT COUNT(*) FROM tags";
+    private static final String PAGINATION = " LIMIT :p_size OFFSET :page ";
+
+    private Long lastQueryCount = 0L;
     private final Logger logger = LogManager.getLogger(TagDao.class);
 
     @Autowired
@@ -58,6 +62,7 @@ public class TagDao implements CommonDao<Tag, TagCriteria>, CustomTagDao {
         Tag result = session.get(Tag.class, id);
         if (result != null) {
             Hibernate.initialize(result.getCertificates());
+            lastQueryCount = 1L;
         }
         return result;
     }
@@ -71,8 +76,11 @@ public class TagDao implements CommonDao<Tag, TagCriteria>, CustomTagDao {
     public List<Tag> readAll() {
         List<Tag> result;
         Session session = sessionFactory.getCurrentSession();
+        lastQueryCount = ((BigInteger) session.createSQLQuery(SQL_COUNT_READ_ALL_TAGS).list().get(0)).longValue();
+
         result = (List<Tag>) session.createSQLQuery(SQL_READ_ALL_TAGS).addEntity(Tag.class)
                 .list();
+
         return result;
     }
 
@@ -80,6 +88,9 @@ public class TagDao implements CommonDao<Tag, TagCriteria>, CustomTagDao {
     public List<Tag> readByCriteria(Pageable pageable, TagCriteria criteria) {
         List<Tag> result;
         Session session = sessionFactory.getCurrentSession();
+        lastQueryCount = ((BigInteger) session.createSQLQuery(SQL_READ_COUNT_TAG_BY_CRITERIA)
+                .setParameter("name", "%" + criteria.getName() + "%").list().get(0)).longValue();
+
         result = (List<Tag>) session.createSQLQuery(prepareSQLFromCriteria(criteria))
                 .setParameter("name", "%" + criteria.getName() + "%")
                 .setParameter("p_size", pageable.getPageSize())
@@ -129,6 +140,11 @@ public class TagDao implements CommonDao<Tag, TagCriteria>, CustomTagDao {
             tags.add(readById(id));
         }
         return tags;
+    }
+
+    @Override
+    public Long getLastQueryCount() {
+        return lastQueryCount;
     }
 
 }

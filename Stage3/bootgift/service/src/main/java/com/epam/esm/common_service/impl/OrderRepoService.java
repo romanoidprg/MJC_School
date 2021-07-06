@@ -5,12 +5,10 @@ import com.epam.esm.dao.CommonDao;
 import com.epam.esm.errors.*;
 import com.epam.esm.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
@@ -38,18 +36,19 @@ public class OrderRepoService implements CommonService<Order> {
 
     @Override
     public long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
-        Long id;
-        ObjectMapper objectMapper = new ObjectMapper();
-        Order order = objectMapper.readValue(jsonString, Order.class);
-        if (!orderDao.isExist(order)) {
-            order.setId(null);
-            order.setTimeStamp(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
-            order.setCost(order.getCert().getPrice());
-            id = orderDao.create(order);
-        } else {
-            throw new EntityAlreadyExistException();
-        }
-        return id;
+//        Long id;
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        Order order = objectMapper.readValue(jsonString, Order.class);
+//        if (!orderDao.isExist(order)) {
+//            order.setId(null);
+//            order.setTimeStamp(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+//            order.setCost(order.getCert().getPrice());
+//            id = orderDao.create(order);
+//        } else {
+//            throw new EntityAlreadyExistException();
+//        }
+//        return id;
+        return 0L;
     }
 
 
@@ -97,8 +96,16 @@ public class OrderRepoService implements CommonService<Order> {
     }
 
     @Override
-    public List<Order> readByCriteria(Pageable pageable, String... params) {
-        return null;
+    public List<Order> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
+        OrderCriteria criteria = new OrderCriteria();
+        if (params.length>0) {
+            if (params[0].matches("[0-9]+")) {
+                criteria.setUserId(Long.parseLong(params[0]));
+            } else {
+                throw new NoSuchUserIdException(params[0]);
+            }
+        }
+        return orderDao.readByCriteria(pageable, criteria);
     }
 
     @Override
@@ -114,6 +121,11 @@ public class OrderRepoService implements CommonService<Order> {
     @Override
     public void deleteById(String id) throws LocalAppException {
                 orderDao.delete(readById(id));
+    }
+
+    @Override
+    public Long getLastQueryCount() {
+        return orderDao.getLastQueryCount();
     }
 
     @Override

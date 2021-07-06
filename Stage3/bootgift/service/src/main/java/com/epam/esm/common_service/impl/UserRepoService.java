@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 
 import java.io.File;
@@ -63,8 +62,9 @@ public class UserRepoService implements CommonService<User> {
     }
 
     @Override
-    public List<User> readByCriteria(Pageable pageable, String... params) {
-        return null;
+    public List<User> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
+        UserCriteria criteria = new UserCriteria();
+        return userDao.readByCriteria(pageable, criteria);
     }
 
     @Override
@@ -80,6 +80,11 @@ public class UserRepoService implements CommonService<User> {
     @Override
     public void deleteById(String id) throws LocalAppException {
         userDao.delete(readById(id));
+    }
+
+    @Override
+    public Long getLastQueryCount() {
+        return userDao.getLastQueryCount();
     }
 
     @Override

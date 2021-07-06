@@ -1,5 +1,6 @@
 package com.epam.esm.controllers;
 
+import com.epam.esm.Errors.NoSuchPageException;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.CustomTagServise;
 import com.epam.esm.errors.LocalAppException;
@@ -7,8 +8,8 @@ import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.epam.esm.CommonWeb.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -26,32 +28,24 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping(value = "/v1/tags")
 public class TagsController {
 
-    private static final String REL_READ_BY_ID = "Read this tag.";
-    private static final String REL_DELETE_TAG = "Delete this tag";
-    private static final String TAG_ID = "tag_id";
-    public static final String TAG_IN_JSON_FORMAT = "tag_in_json_format";
-    public static final String REL_CREATE_TAG_FROM_JSON_FORMAT = "Create tag from json format";
-    public static final String REL_WUTUHCO = "Get the most widely used tag of a user with the highest cost of all orders.";
-    public static final String READ_1_ST_TAG = "Read 1-st tag.";
-    public static final String REL_READ_PARAMS = "Read tag with params";
-    public static final String DEF_PAGE = "1";
-    public static final String DEF_P_SIZE = "5";
-    public static final String REL_NEXT_PAGE = "Next page";
-
 
     @Autowired
     @Qualifier("tagRepoService")
-    CommonService<Tag> tagRepoService;
+    private CommonService<Tag> tagRepoService;
 
     @Autowired
     @Qualifier("customTagRepoService")
-    CustomTagServise<Tag> customTagRepoService;
+    private CustomTagServise<Tag> customTagRepoService;
 
     @PostMapping
-    public Long createTag(@RequestBody String jsonString) throws Exception {
-        return tagRepoService.createFromJson(jsonString);
+    public EntityModel<Long> createTag(@RequestBody String jsonString) throws Exception {
+        Long id = tagRepoService.createFromJson(jsonString);
+        return EntityModel.of(id,
+                getLinkRead(id),
+                getLinkWutuhco(),
+                getLinkReadParams("", "true", "asc", DEF_PAGE, DEF_P_SIZE),
+                getLinkDel(id));
     }
-
 
     @GetMapping
     public CollectionModel<EntityModel<Tag>> readTagByParams(
@@ -61,31 +55,61 @@ public class TagsController {
             @RequestParam(value = "page", required = false) String page,
             @RequestParam(value = "page_size", required = false) String pSize
     ) throws Exception {
-        page = page == null ? DEF_PAGE : page;
-        pSize = pSize == null ? DEF_P_SIZE : pSize;
-        Pageable pageable = PageRequest.of(Integer.parseInt(page), Integer.parseInt(pSize));
-
+        Pageable pageable = getPagebale(page, pSize, Sort.unsorted());
         List<Tag> tagList = tagRepoService.readByCriteria(pageable, name, sortByName, sortOrder);
-
         List<EntityModel<Tag>> entTags = new ArrayList<>();
+        Long totalCount = tagRepoService.getLastQueryCount();
+        PageImpl<EntityModel<Tag>> pager = new PageImpl(entTags, pageable, totalCount);
+
+        if (pageable.getPageNumber() >= pager.getTotalPages()) {
+            throw new NoSuchPageException();
+        }
+
+        entTags = new ArrayList<>();
         for (Tag t : tagList) {
             t.setCertificates(null);
             entTags.add(EntityModel.of(t,
                     getLinkRead(t.getId()),
                     getLinkDel(t.getId())));
         }
-        PageImpl<EntityModel<Tag>> pager = new PageImpl(entTags, pageable, entTags.size());
-
+        pager = new PageImpl(entTags, pageable, totalCount);
         CollectionModel<EntityModel<Tag>> collEntTags = CollectionModel.of(pager,
                 getLinkReadParams(name, sortByName, sortOrder, page, pSize).expand().withSelfRel(),
-                getLinkReadParamsNP(name, sortByName, sortOrder,
-                        String.valueOf(pageable.next().getPageNumber()), String.valueOf(pageable.getPageSize())).expand(),
-                getLinkReadParamsPP(name, sortByName, sortOrder,
-                        String.valueOf(pageable.previousOrFirst().getPageNumber()), String.valueOf(pageable.getPageSize())).expand(),
-                getLinkWutuhco()
-        );
+                getLinkWutuhco());
+        collEntTags.add(getLinksPagination(name, sortByName, sortOrder, pageable, pager));
+
         return collEntTags;
     }
+
+    private List<Link> getLinksPagination(String name,
+                                          String sortByName,
+                                          String sortOrder,
+                                          Pageable pageable,
+                                          PageImpl<EntityModel<Tag>> pager) throws Exception {
+        List<Link> links = new ArrayList<>();
+        if (pageable.getPageNumber() != 0) {
+            links.add(getLinkReadParams(name, sortByName, sortOrder,
+                    String.valueOf(pageable.first().getPageNumber()),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_FIRST_PAGE));
+            links.add(getLinkReadParams(name, sortByName, sortOrder,
+                    String.valueOf(pageable.previousOrFirst().getPageNumber()),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_PREVIOUS_PAGE));
+        }
+        if (pageable.next().getPageNumber() < pager.getTotalPages()) {
+            links.add(getLinkReadParams(name, sortByName, sortOrder,
+                    String.valueOf(pageable.next().getPageNumber()),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_NEXT_PAGE));
+            links.add(getLinkReadParams(name, sortByName, sortOrder,
+                    String.valueOf(pager.getTotalPages() - 1),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_LAST_PAGE));
+        }
+        return links;
+    }
+
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteTag(@PathVariable String id) throws LocalAppException {
@@ -105,7 +129,7 @@ public class TagsController {
         }
         CollectionModel<EntityModel<Tag>> collEntTags = CollectionModel.of(entTags,
                 getLinkWutuhco().withSelfRel(),
-                getLinkReadParams("", "true", "asc",  DEF_PAGE, DEF_P_SIZE)
+                getLinkReadParams("", "true", "asc", DEF_PAGE, DEF_P_SIZE)
         );
         return collEntTags;
     }
@@ -131,20 +155,13 @@ public class TagsController {
     }
 
     private Link getLinkReadParams(String name, String sortByName, String sortOrder, String page, String pSize) throws Exception {
-        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page,pSize)).withRel(REL_READ_PARAMS);
+        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page, pSize)).withRel(REL_READ_TAG_PARAMS);
     }
 
     private Link getLinkRead(Long id) throws Exception {
         return linkTo(methodOn(TagsController.class).readTagById(String.valueOf(id))).withRel(REL_READ_BY_ID);
     }
 
-    private Link getLinkReadParamsNP(String name, String sortByName, String sortOrder, String page, String pSize) throws Exception {
-        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page,pSize)).withRel(REL_NEXT_PAGE);
-    }
-
-    private Link getLinkReadParamsPP(String name, String sortByName, String sortOrder, String page, String pSize) throws Exception {
-        return linkTo(methodOn(TagsController.class).readTagByParams(name, sortByName, sortOrder, page,pSize)).withRel("Previous page");
-    }
 
 }
 

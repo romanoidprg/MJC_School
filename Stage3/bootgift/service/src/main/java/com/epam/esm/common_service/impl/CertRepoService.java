@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -63,7 +62,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
                 newTags.add(t);
             } else {
                 tagCriteria = new TagCriteria(t.getName(), true, "asc");
-                newTags.add(tagDao.readByCriteria(PageRequest.of(1,10), tagCriteria).get(0));
+                newTags.add(tagDao.readByCriteria(PageRequest.of(0,1), tagCriteria).get(0));
             }
         }
         return newTags;
@@ -156,7 +155,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     }
 
     @Override
-    public List<GiftCertificate> readByCriteria(Pageable pageable, String... params) {
+    public List<GiftCertificate> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
         List<GiftCertificate> result = new ArrayList<>();
         if (params.length > 8) {
             String tagName = params[0];
@@ -228,5 +227,10 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     @Override
     public void deleteById(String id) throws LocalAppException {
         certDao.delete(readById(id));
+    }
+
+    @Override
+    public Long getLastQueryCount() {
+        return certDao.getLastQueryCount();
     }
 }

@@ -1,7 +1,6 @@
 package com.epam.esm.common_service;
 
 import com.epam.esm.errors.LocalAppException;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 
 import java.io.File;
@@ -19,13 +18,15 @@ public interface CommonService<T> {
 
     T readById(String id) throws LocalAppException;
 
-    List<T> readByCriteria(Pageable pageable, String... params);
+    List<T> readByCriteria(Pageable pageable, String... params) throws LocalAppException;
 
     boolean updateFromJson(String id, String jsonString) throws LocalAppException;
 
     boolean updateField(String id, Map<String, String> params) throws LocalAppException;
 
     void deleteById(String id) throws LocalAppException;
+
+    Long getLastQueryCount();
 
     boolean fillTable();
 
