@@ -3,6 +3,8 @@ package com.epam.esm.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -60,17 +62,6 @@ public class GiftCertificate {
     private Set<Tag> tags = new HashSet<>();
 
 
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "cert")
-//    private Set<Order> orders = new HashSet();
-
-//    public Set<Order> getOrders() {
-//        return orders;
-//    }
-
-//    public void setOrders(Set<Order> orders) {
-//        this.orders = orders;
-//    }
-
     public GiftCertificate() {
     }
 
@@ -88,28 +79,6 @@ public class GiftCertificate {
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
     }
-//
-//    public void addTag(Tag tag) {
-//        tags.add(tag);
-//        tag.getCertificates().add(this);
-//    }
-//
-//    public void addTags(Set<Tag> tags) {
-//        for (Tag t : tags) {
-//            this.addTag(t);
-//        }
-//    }
-//
-//    public void removeTag(Tag tag) {
-//        tags.remove(tag);
-//        tag.getCertificates().remove(this);
-//    }
-//
-//    public void removeTags(Set<Tag> tags) {
-//        for (Tag t : tags) {
-//            this.removeTag(t);
-//        }
-//    }
 
     public Long getId() {
         return id;
@@ -175,5 +144,20 @@ public class GiftCertificate {
         this.tags = tags;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GiftCertificate that = (GiftCertificate) o;
+
+        return new EqualsBuilder().append(price, that.price).append(duration, that.duration).append(name, that.name).append(description, that.description).append(createDate, that.createDate).append(lastUpdateDate, that.lastUpdateDate).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(description).append(price).append(duration).append(createDate).append(lastUpdateDate).toHashCode();
+    }
 }
 

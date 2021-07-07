@@ -26,6 +26,7 @@ public class CommonWeb {
 
     public static final String REL_DELETE_CERT = "Delete this certificate";
     public static final String REL_READ_CERT_PARAMS = "Read certificate with params";
+    public static final String REL_READ_CERT_TAGS = "Read certificate with tags";
     public static final String REL_READ_CERT_BY_ID = "Read this certificate.";
 
     public static final String REL_READ_USER_BY_ID = "Read this user.";

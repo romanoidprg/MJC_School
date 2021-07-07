@@ -1,4 +1,4 @@
-package com.epam.esm.config;
+package com.epam.esm.common_service;
 
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.CustomCertService;
@@ -14,10 +14,21 @@ import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.dao.impl.OrderDao;
 import com.epam.esm.dao.impl.TagDao;
 import com.epam.esm.dao.impl.UserDao;
-import com.epam.esm.model.*;
-import org.apache.commons.dbcp2.BasicDataSource;
+import com.epam.esm.model.CertCriteria;
+import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.Order;
+import com.epam.esm.model.OrderCriteria;
+import com.epam.esm.model.Tag;
+import com.epam.esm.model.TagCriteria;
+import com.epam.esm.model.User;
+import com.epam.esm.model.UserCriteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -29,53 +40,21 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 
-@Configuration
-@EnableAspectJAutoProxy(proxyTargetClass = false)
-@EnableTransactionManagement
-public class RootConfig {
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 
-    @Autowired
-    private Environment env;
 
-    @Bean
-    public DataSource dataSource() {
-
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(env.getProperty("spring.datasource.driver-class-name", ""));
-        dataSource.setUrl(env.getProperty("spring.datasource.url"));
-        dataSource.setUsername(env.getProperty("spring.datasource.username"));
-        dataSource.setPassword(env.getProperty("spring.datasource.password"));
-
-        return dataSource;
-    }
+@SpringBootConfiguration
+public class TestConfig {
 
     @Bean
-    public LocalSessionFactoryBean sessionFactory(DataSource dataSource) throws IOException {
-        Properties properties = new Properties();
-        properties.put("hibernate.dialect", env.getProperty("spring.jpa.properties.hibernate.dialect"));
-        properties.put("hibernate.show_sql", env.getProperty("spring.jpa.show-sql"));
-        properties.put("hibernate.hbm2ddl.auto", env.getProperty("spring.jpa.hibernate.ddl-auto"));
-//        properties.put("hibernate.current_session_context_class",
-//                env.getProperty("spring.jpa.properties.hibernate.current_session_context_class"));
-        properties.put("hibernate.id.new_generator_mappings", env.getProperty("spring.jpa.properties.hibernate.id.new_generator_mappings"));
-
-
-        LocalSessionFactoryBean factoryBean = new LocalSessionFactoryBean();
-
-        factoryBean.setDataSource(dataSource);
-        factoryBean.setPackagesToScan("com.epam.esm.model");
-        factoryBean.setAnnotatedClasses(GiftCertificate.class, Tag.class);
-        factoryBean.setHibernateProperties(properties);
-        factoryBean.afterPropertiesSet();
-        return factoryBean;
-    }
-
-    @Autowired
-    @Bean
-    public PlatformTransactionManager transactionManager(SessionFactory sessionFactory) throws IOException {
-        return new HibernateTransactionManager(sessionFactory(dataSource()).getObject());
+    public SessionFactory sessionFactory() {
+        SessionFactory sf = Mockito.mock(SessionFactoryImpl.class);
+        return sf;
     }
 
     @Bean
@@ -110,7 +89,17 @@ public class RootConfig {
 
     @Bean
     public CommonDao<GiftCertificate, CertCriteria> certDao() {
-        return new CertDao();
+        CommonDao<GiftCertificate, CertCriteria> mockCertDao = Mockito.mock(CertDao.class);
+        Mockito.when(mockCertDao.create(any())).thenReturn(1L);
+        Mockito.when(mockCertDao.isExist(any())).thenReturn(false);
+        Mockito.when(mockCertDao.readById(anyLong())).thenReturn(new GiftCertificate());
+//        Mockito.when(mockCertDao.readByCriteria(any())).thenReturn(new ArrayList<>(Arrays.asList(
+//                new GiftCertificate(),
+//                new GiftCertificate())));
+//        Mockito.when(mockCertDao.update(any())).thenReturn(true);
+//        Mockito.when(mockCertDao.deleteById(anyLong())).thenReturn(true);
+        return mockCertDao;
+
     }
 
     @Bean
@@ -118,11 +107,13 @@ public class RootConfig {
         return new CertDao();
     }
 
-
-
     @Bean
     public CommonDao<Tag, TagCriteria> tagDao() {
-        return new TagDao();
+        CommonDao<Tag, TagCriteria> mockTagDao = Mockito.mock(TagDao.class);
+        Mockito.when(mockTagDao.create(any())).thenReturn(1L);
+        Mockito.when(mockTagDao.isExist(any())).thenReturn(false);
+
+        return mockTagDao;
     }
 
     @Bean

@@ -1,6 +1,7 @@
 package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.dao.CustomCertDao;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
 import org.apache.logging.log4j.LogManager;
@@ -9,6 +10,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +20,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Repository
 @Transactional
-public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
+public class CertDao implements CommonDao<GiftCertificate, CertCriteria>, CustomCertDao {
 
     private static final String IS_EXIST_SQL_QUERY = "SELECT * FROM certificates where name = :name " +
             "AND description = :descr AND price = :price AND duration = :dur";
@@ -36,6 +39,14 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
             "certificates AS c WHERE c.name LIKE :cName AND c.description LIKE :cDesc ORDER BY ";
     private static final String SQL_READ_COUNT_CERT_BY_CRITERIA_ANY_TAG = "SELECT COUNT(*) FROM " +
             "certificates AS c WHERE c.name LIKE :cName AND c.description LIKE :cDesc ";
+    public static final String PRE_SQL = "SELECT * ";
+    public static final String PRE_SQL_COUNT = "SELECT COUNT(*) ";
+    private static final String SQL_READ_CERT_MULTIPLE_TAG_BEGIN = "FROM (" +
+            "SELECT c.*, count(c.id) as count FROM " +
+            "((certificates AS c RIGHT JOIN certs_tags AS ct on c.id=ct.cert_id) " +
+            "LEFT JOIN tags AS t ON ct.tag_id=t.id) " +
+            "WHERE ";
+    private static final String SQL_READ_CERT_MULTIPLE_TAG_END= " GROUP BY c.id) as tab WHERE tab.count=";
 
     private static final String SQL_NAME = "c.name ";
     private static final String SQL_CREATE_DATE = "c.create_date ";
@@ -187,5 +198,37 @@ public class CertDao implements CommonDao<GiftCertificate, CertCriteria> {
     @Override
     public void delete(GiftCertificate entity) {
         sessionFactory.getCurrentSession().delete(entity);
+    }
+
+    @Override
+    public List<GiftCertificate> readWithTags(Pageable pageable, String[] tags) {
+        List<GiftCertificate> result;
+        Session session = sessionFactory.getCurrentSession();
+        StringBuilder sql = new StringBuilder(SQL_READ_CERT_MULTIPLE_TAG_BEGIN);
+        for (int i = 0; i < tags.length - 1; i++) {
+            sql.append("t.name='" + tags[i] + "'");
+            sql.append(" OR ");
+        }
+        sql.append("t.name='" + tags[tags.length - 1] + "'");
+        sql.append(SQL_READ_CERT_MULTIPLE_TAG_END + tags.length);
+        lastQueryCount = ((BigInteger) session.createSQLQuery(PRE_SQL_COUNT + sql.toString())
+                .list().get(0)).longValue();
+        result = session.createSQLQuery(getPageableSQL(PRE_SQL + sql.toString(), pageable))
+                .addEntity(GiftCertificate.class).list();
+        return result;
+    }
+
+
+    private String getPageableSQL(String sql, Pageable pageable){
+        StringBuilder result = new StringBuilder(sql);
+        Sort sort = pageable.getSort();
+        if (sort.isSorted()) {
+            result.append(" ORDER BY " + sort.stream().findAny().get().getProperty());
+            result.append(" " + sort.stream().findAny().get().getDirection().name());
+        }
+        result.append(" LiMIT " + pageable.getPageSize() + " ");
+        result.append(" OFFSET " + pageable.getOffset() + " ");
+
+        return result.toString();
     }
 }

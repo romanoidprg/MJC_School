@@ -1,7 +1,9 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomCertService;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.dao.CustomCertDao;
 import com.epam.esm.errors.*;
 import com.epam.esm.model.CertCriteria;
 import com.epam.esm.model.GiftCertificate;
@@ -23,7 +25,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 
-public class CertRepoService implements CommonService<GiftCertificate> {
+public class CertRepoService implements CommonService<GiftCertificate>, CustomCertService {
 
     private static final String WORDS_FILE = "D:\\JWD\\Lab\\Stage3\\bootgift\\web\\src\\main\\resources\\words.txt";
     private final Logger logger = LogManager.getLogger(CertRepoService.class);
@@ -31,6 +33,9 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     @Autowired
     @Qualifier("certDao")
     private CommonDao<GiftCertificate, CertCriteria> certDao;
+
+    @Autowired
+    private CustomCertDao customCertDao;
 
     @Autowired
     @Qualifier("tagDao")
@@ -62,7 +67,7 @@ public class CertRepoService implements CommonService<GiftCertificate> {
                 newTags.add(t);
             } else {
                 tagCriteria = new TagCriteria(t.getName(), true, "asc");
-                newTags.add(tagDao.readByCriteria(PageRequest.of(0,1), tagCriteria).get(0));
+                newTags.add(tagDao.readByCriteria(PageRequest.of(0, 1), tagCriteria).get(0));
             }
         }
         return newTags;
@@ -101,58 +106,6 @@ public class CertRepoService implements CommonService<GiftCertificate> {
         return null;
     }
 
-    @Override
-    public boolean fillTable() {
-        boolean result = false;
-        try {
-            Tag t;
-            Random r1 = new Random();
-            Random r2 = new Random();
-            File file = new File(WORDS_FILE);
-            GiftCertificate cert;
-            int size = getWordsAmount(file);
-            int id;
-            int tagCol;
-            for (int i = 0; i < 10000; i++) {
-                cert = new GiftCertificate();
-                cert.setName(getRandomWord(file, size));
-                cert.setDescription(getRandomWord(file, size));
-                cert.setPrice(new Random().nextInt(10000));
-                cert.setDuration(new Random().nextInt(365));
-                cert.setCreateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
-                cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
-                tagCol = r1.nextInt(4) + 1;
-                for (int j = 0; j < tagCol; j++) {
-                    id = r2.nextInt(999) + 1;
-                    t = tagDao.readById(id);
-                    if (t == null) {
-                        throw new NoSuchIdException("Tag with id [" + id + "] doesn't exist.");
-                    }
-                    cert.getTags().add(t);
-                }
-                certDao.create(cert);
-            }
-            result = true;
-        } catch (FileNotFoundException | NoSuchIdException e) {
-            logger.error(e.getMessage());
-        }
-        return result;
-    }
-
-    @Override
-    public GiftCertificate readById(String id) throws LocalAppException {
-        GiftCertificate result;
-        if (id.matches("[0-9]+")) {
-            result = certDao.readById(Long.parseLong(id));
-            if (result == null) {
-                throw new NoSuchCertIdException(id);
-            }
-        } else {
-            throw new NoSuchCertIdException(id);
-        }
-        result.getTags().forEach(t -> t.setCertificates(null));
-        return result;
-    }
 
     @Override
     public List<GiftCertificate> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
@@ -233,4 +186,70 @@ public class CertRepoService implements CommonService<GiftCertificate> {
     public Long getLastQueryCount() {
         return certDao.getLastQueryCount();
     }
+
+    @Override
+    public Long getLastQueryCountFromCustom() {
+        return customCertDao.getLastQueryCount();
+    }
+
+    @Override
+    public List<GiftCertificate> readCertsWithTags(Pageable pageable, String[] tags) {
+        return customCertDao.readWithTags(pageable, tags);
+    }
+
+    @Override
+    public GiftCertificate readById(String id) throws LocalAppException {
+        GiftCertificate result;
+        if (id.matches("[0-9]+")) {
+            result = certDao.readById(Long.parseLong(id));
+            if (result == null) {
+                throw new NoSuchCertIdException(id);
+            }
+        } else {
+            throw new NoSuchCertIdException(id);
+        }
+        result.getTags().forEach(t -> t.setCertificates(null));
+        return result;
+    }
+
+    @Override
+    public boolean fillTable() {
+        boolean result = false;
+        try {
+            Tag t;
+            Random r1 = new Random();
+            Random r2 = new Random();
+            File file = new File(WORDS_FILE);
+            GiftCertificate cert;
+            int size = getWordsAmount(file);
+            int id;
+            int tagCol;
+            for (int i = 0; i < 10000; i++) {
+                cert = new GiftCertificate();
+                cert.setName(getRandomWord(file, size));
+                cert.setDescription(getRandomWord(file, size));
+                cert.setPrice(new Random().nextInt(10000));
+                cert.setDuration(new Random().nextInt(365));
+                cert.setCreateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+                cert.setLastUpdateDate(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+                tagCol = r1.nextInt(4) + 1;
+                for (int j = 0; j < tagCol; j++) {
+                    id = r2.nextInt(999) + 1;
+                    t = tagDao.readById(id);
+                    if (t == null) {
+                        throw new NoSuchIdException("Tag with id [" + id + "] doesn't exist.");
+                    }
+                    cert.getTags().add(t);
+                }
+                certDao.create(cert);
+            }
+            result = true;
+        } catch (FileNotFoundException | NoSuchIdException e) {
+            logger.error(e.getMessage());
+        }
+
+        return result;
+    }
 }
+
+

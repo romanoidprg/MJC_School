@@ -1,7 +1,9 @@
 package com.epam.esm.controllers;
 
+import com.epam.esm.Errors.NoAnyTagException;
 import com.epam.esm.Errors.NoSuchPageException;
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomCertService;
 import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.model.BoolWrapper;
 import com.epam.esm.model.GiftCertificate;
@@ -45,6 +47,9 @@ public class CertificatesController {
     @Qualifier("certRepoService")
     CommonService<GiftCertificate> certRepoService;
 
+    @Autowired
+    CustomCertService customCertRepoService;
+
     @PostMapping
     public EntityModel<IdWrapper> createCertificate(@RequestBody String jsonString) throws Exception {
         Long id = certRepoService.createFromJson(jsonString);
@@ -64,6 +69,43 @@ public class CertificatesController {
         return EntityModel.of(BoolWrapper.of(certRepoService.updateField(id, params)),
                 getLinkRead(Long.parseLong(id)),
                 getLinkDel(Long.parseLong(id)));
+    }
+
+
+    @GetMapping(value = "/withtags")
+    public CollectionModel<EntityModel<GiftCertificate>> readCertsWithTags(
+            @RequestParam(value = "tag", required = false) String[] tags,
+            @RequestParam(value = "page", required = false) String page,
+            @RequestParam(value = "page_size", required = false) String pSize
+    ) throws Exception {
+        if (tags == null) {
+            throw new NoAnyTagException();
+        }
+
+        Pageable pageable = getPagebale(page, pSize, Sort.unsorted());
+        List<GiftCertificate> certList = customCertRepoService.readCertsWithTags(pageable, tags);
+        List<EntityModel<GiftCertificate>> entCerts = new ArrayList<>();
+        Long totalCount = customCertRepoService.getLastQueryCountFromCustom();
+        PageImpl<EntityModel<GiftCertificate>> pager = new PageImpl(entCerts, pageable, totalCount);
+
+        if (pageable.getPageNumber() >= pager.getTotalPages()) {
+            throw new NoSuchPageException();
+        }
+
+        entCerts = new ArrayList<>();
+        for (GiftCertificate c : certList) {
+            c.getTags().forEach(t -> t.setCertificates(null));
+            entCerts.add(EntityModel.of(c,
+                    getLinkRead(c.getId()),
+                    getLinkDel(c.getId())));
+        }
+        pager = new PageImpl(entCerts, pageable, totalCount);
+        CollectionModel<EntityModel<GiftCertificate>> collEntCerts = CollectionModel.of(
+                pager, getLinkGetWithTags(tags, page, pSize).withSelfRel().expand()
+        );
+        collEntCerts.add(getLinksPaginationForGetWithTags(tags, pageable, pager));
+
+        return collEntCerts;
     }
 
     @GetMapping
@@ -94,7 +136,6 @@ public class CertificatesController {
 
         entCerts = new ArrayList<>();
         for (GiftCertificate c : certList) {
-//            c.setCertificates(null);
             entCerts.add(EntityModel.of(c,
                     getLinkRead(c.getId()),
                     getLinkDel(c.getId())));
@@ -150,10 +191,38 @@ public class CertificatesController {
         return links;
     }
 
+    private List<Link> getLinksPaginationForGetWithTags(
+            String[] tags,
+            Pageable pageable,
+            PageImpl<EntityModel<GiftCertificate>> pager) throws Exception {
+        List<Link> links = new ArrayList<>();
+        if (pageable.getPageNumber() != 0) {
+            links.add(getLinkGetWithTags(tags,
+                    String.valueOf(pageable.first().getPageNumber()),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_FIRST_PAGE));
+            links.add(getLinkGetWithTags(tags,
+                    String.valueOf(pageable.previousOrFirst().getPageNumber()),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_PREVIOUS_PAGE));
+        }
+        if (pageable.next().getPageNumber() < pager.getTotalPages()) {
+            links.add(getLinkGetWithTags(tags,
+                    String.valueOf(pageable.next().getPageNumber()),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_NEXT_PAGE));
+            links.add(getLinkGetWithTags(tags,
+                    String.valueOf(pager.getTotalPages() - 1),
+                    String.valueOf(pageable.getPageSize()))
+                    .expand().withRel(REL_LAST_PAGE));
+        }
+        return links;
+    }
+
 
     @GetMapping(value = "/{id}")
     public EntityModel<GiftCertificate> readCertificateById(@PathVariable String id) throws Exception {
-        return  EntityModel.of(certRepoService.readById(id),
+        return EntityModel.of(certRepoService.readById(id),
                 getLinkRead(Long.parseLong(id)).withSelfRel(),
                 getLinkDel(Long.parseLong(id)));
     }
@@ -183,6 +252,11 @@ public class CertificatesController {
     private Link getLinkRead(Long id) throws Exception {
         return linkTo(methodOn(CertificatesController.class)
                 .readCertificateById(String.valueOf(id))).withRel(REL_READ_CERT_BY_ID);
+    }
+
+    private Link getLinkGetWithTags(String[] tags, String page, String pSize) throws Exception {
+        return linkTo(methodOn(CertificatesController.class)
+                .readCertsWithTags(tags, page, pSize)).withRel(REL_READ_CERT_TAGS);
     }
 
 }
