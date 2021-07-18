@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,11 +29,16 @@ public class UserRepoService implements CommonService<User> {
     @Qualifier("userDao")
     private CommonDao<User, UserCriteria> userDao;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+
     @Override
     public long createFromJson(String jsonString) throws JsonProcessingException, EntityAlreadyExistException {
         Long id;
         ObjectMapper objectMapper = new ObjectMapper();
         User user = objectMapper.readValue(jsonString, User.class);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (!userDao.isExist(user)) {
             id = userDao.create(user);
         } else {

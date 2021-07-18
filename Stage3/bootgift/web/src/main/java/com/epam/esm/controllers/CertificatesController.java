@@ -227,7 +227,7 @@ public class CertificatesController {
                 getLinkDel(Long.parseLong(id)));
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/{id}/delete")
     public ResponseEntity<Void> deleteCertificate(@PathVariable String id) throws LocalAppException {
         certRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);

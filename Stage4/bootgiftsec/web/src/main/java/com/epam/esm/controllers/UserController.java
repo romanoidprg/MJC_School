@@ -16,10 +16,12 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +44,13 @@ public class UserController {
     @Autowired
     @Qualifier("orderRepoService")
     CommonService<Order> orderRepoService;
+
+    @PostMapping
+    public EntityModel<IdWrapper> createUser(@RequestBody String jsonString) throws Exception {
+        Long userId = userRepoService.createFromJson(jsonString);
+        return EntityModel.of(IdWrapper.of(userId),
+                linkTo(methodOn(UserController.class).createUser(jsonString)).withSelfRel());
+    }
 
     @PostMapping(value = "/{userId}/orderforcertificate/{certId}")
     public EntityModel<IdWrapper> createOrder(@PathVariable String userId, @PathVariable String certId) throws Exception {
@@ -106,8 +115,8 @@ public class UserController {
 
     private List<Link> getLinksPagination(Pageable pageable, PageImpl<EntityModel<User>> pager) throws Exception {
         List<Link> links = new ArrayList<>();
-        String sortBy=null;
-        String sortOrder=null;
+        String sortBy = null;
+        String sortOrder = null;
         Sort sort = pageable.getSort();
         if (sort.isSorted()) {
             sortBy = sort.stream().findFirst().get().getProperty();

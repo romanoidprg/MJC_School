@@ -63,7 +63,7 @@ public class UserController {
         );
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/{id}/delete")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) throws LocalAppException {
         userRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);
