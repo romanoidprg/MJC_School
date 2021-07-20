@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Import;
 		SecurityAutoConfiguration.class,
 		UserDetailsServiceAutoConfiguration.class})
 @Import({RootConfig.class, SecurityConfig.class})
-@ComponentScan(basePackages = {"com.epam.esm.controllers"})
+@ComponentScan(basePackages = {"com.epam.esm"})
 public class BootGiftApplication {
 
 	public static void main(String[] args) {

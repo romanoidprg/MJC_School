@@ -1,6 +1,8 @@
 package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.dao.CustomCertDao;
+import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import com.epam.esm.model.UserCriteria;
@@ -17,9 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.util.List;
 
-@Repository
 @Transactional
-public class UserDao implements CommonDao<User, UserCriteria> {
+public class UserDao implements CommonDao<User, UserCriteria>, CustomUserDao {
 
     private static final String IS_EXIST_SQL_QUERY = "SELECT * FROM users where name = :name";
     private static final String SQL_READ_COUNT_ALL = "SELECT COUNT(*) FROM users ";
@@ -65,7 +66,7 @@ public class UserDao implements CommonDao<User, UserCriteria> {
         return result;
     }
 
-    private String getPageableSQL(String sql, Pageable pageable){
+    private String getPageableSQL(String sql, Pageable pageable) {
         StringBuilder result = new StringBuilder(sql);
         Sort sort = pageable.getSort();
         if (sort.isSorted()) {
@@ -101,5 +102,14 @@ public class UserDao implements CommonDao<User, UserCriteria> {
     @Override
     public Long getLastQueryCount() {
         return lastQueryCount;
+    }
+
+    @Override
+    public User readByName(String userName) {
+        Session s = sessionFactory.getCurrentSession();
+        User user = (User)s.createSQLQuery(IS_EXIST_SQL_QUERY)
+                .setParameter("name", userName)
+                .addEntity(User.class).stream().findAny().orElse(null);
+        return user;
     }
 }

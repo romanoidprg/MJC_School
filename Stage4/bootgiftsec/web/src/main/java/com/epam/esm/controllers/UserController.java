@@ -1,11 +1,15 @@
 package com.epam.esm.controllers;
 
+import com.epam.esm.Errors.NoPermissionsForResourceException;
 import com.epam.esm.Errors.NoSuchPageException;
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomUserService;
+import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.model.IdWrapper;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
+import com.epam.esm.utils.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageImpl;
@@ -14,8 +18,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +56,38 @@ public class UserController {
     @Qualifier("orderRepoService")
     CommonService<Order> orderRepoService;
 
+    @Autowired
+    CustomUserService customUserService;
+
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
+
+    @PostMapping(value = "login")
+    public ResponseEntity<String> login(@RequestBody User user) {
+        try {
+            org.springframework.security.core.userdetails.User userUD
+                    = new org.springframework.security.core.userdetails.User(user.getName(),
+                    user.getPassword(),
+                    user.isEnabled(),
+                    true,
+                    true,
+                    true,
+                    user.getAuthorities());
+
+            return ResponseEntity.ok()
+                    .header(
+                            HttpHeaders.AUTHORIZATION,
+                            jwtTokenUtil.generateAccessToken(userUD)
+                    )
+                    .body(userUD.getUsername());
+        } catch (BadCredentialsException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
     @PostMapping
     public EntityModel<IdWrapper> createUser(@RequestBody String jsonString) throws Exception {
         Long userId = userRepoService.createFromJson(jsonString);
@@ -52,8 +95,13 @@ public class UserController {
                 linkTo(methodOn(UserController.class).createUser(jsonString)).withSelfRel());
     }
 
-    @PostMapping(value = "/{userId}/orderforcertificate/{certId}")
+    @PostMapping(value = "/{userId}/order/for/certificate/{certId}")
     public EntityModel<IdWrapper> createOrder(@PathVariable String userId, @PathVariable String certId) throws Exception {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = customUserService.readByName(userName);
+        if (Long.parseLong(userId) != user.getId()) {
+            throw new NoPermissionsForResourceException();
+        }
         Long orderId = orderRepoService.create(userId, certId);
         return EntityModel.of(IdWrapper.of(orderId),
                 linkTo(methodOn(UserController.class).createOrder(userId, certId)).withSelfRel(),

@@ -100,7 +100,7 @@ public class OrderController {
                 linkTo(methodOn(OrderController.class).deleteOrder(id)).withRel(REL_DEL_ORDER_BY_ID));
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/{id}/delete")
     public ResponseEntity<Void> deleteOrder(@PathVariable String id) throws LocalAppException {
         orderRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);
