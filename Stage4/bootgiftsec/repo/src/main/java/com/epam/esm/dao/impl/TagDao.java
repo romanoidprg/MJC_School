@@ -18,7 +18,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Repository
+
 @Transactional
 public class TagDao implements CommonDao<Tag, TagCriteria>, CustomTagDao {
 

@@ -26,10 +26,10 @@ public class User {
     @Column(unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
-    @Column(nullable = false)
+    @Column
     private boolean enabled = true;
 
     @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)

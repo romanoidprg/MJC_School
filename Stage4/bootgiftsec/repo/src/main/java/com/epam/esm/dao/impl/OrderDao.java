@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.util.List;
 
-@Repository
 @Transactional
 public class OrderDao implements CommonDao<Order, OrderCriteria> {
 

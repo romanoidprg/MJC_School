@@ -3,6 +3,7 @@ package com.epam.esm.config;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.CustomCertService;
 import com.epam.esm.common_service.CustomTagServise;
+import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.common_service.impl.CertRepoService;
 import com.epam.esm.common_service.impl.OrderRepoService;
 import com.epam.esm.common_service.impl.TagRepoService;
@@ -10,6 +11,7 @@ import com.epam.esm.common_service.impl.UserRepoService;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.dao.CustomCertDao;
 import com.epam.esm.dao.CustomTagDao;
+import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.dao.impl.CertDao;
 import com.epam.esm.dao.impl.OrderDao;
 import com.epam.esm.dao.impl.TagDao;
@@ -133,6 +135,16 @@ public class RootConfig {
     @Bean
     public CommonDao<User, UserCriteria> userDao() {
         return new UserDao();
+    }
+
+    @Bean
+    CustomUserDao customUserDao() {
+        return new UserDao();
+    }
+
+    @Bean
+    CustomUserService customUserService() {
+        return new UserRepoService();
     }
 
 }

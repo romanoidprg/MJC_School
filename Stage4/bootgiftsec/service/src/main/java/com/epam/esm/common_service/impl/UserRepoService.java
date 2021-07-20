@@ -1,7 +1,9 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.dao.CommonDao;
+import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.errors.*;
 import com.epam.esm.model.User;
 import com.epam.esm.model.UserCriteria;
@@ -20,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class UserRepoService implements CommonService<User> {
+public class UserRepoService implements CommonService<User>, CustomUserService {
 
     private static final String NAMES_FILE = "D:\\JWD\\Lab\\Stage3\\bootgift\\web\\src\\main\\resources\\names.txt";
     private final Logger logger = LogManager.getLogger(UserRepoService.class);
@@ -31,6 +33,9 @@ public class UserRepoService implements CommonService<User> {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    CustomUserDao customUserDao;
 
 
     @Override
@@ -115,4 +120,8 @@ public class UserRepoService implements CommonService<User> {
         return result;
     }
 
+    @Override
+    public User readByName(String name) {
+        return customUserDao.readByName(name);
+    }
 }
