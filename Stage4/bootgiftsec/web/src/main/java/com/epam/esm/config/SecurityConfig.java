@@ -1,9 +1,11 @@
 package com.epam.esm.config;
 
 import com.epam.esm.filters.JwtTokenFilter;
+import com.epam.esm.utils.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -34,9 +36,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     JwtTokenFilter jwtTokenFilter;
 
     @Bean
-    public PasswordEncoder bCryptPasswordEncoder() {
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 
     @Override
     @Bean
@@ -78,29 +81,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 )
                 .and();
 
-        http.authorizeRequests()
-                .antMatchers(HttpMethod.POST, "v1/users/login").permitAll()
-                .antMatchers("/v1/**")
-                .hasAnyAuthority("user", "admin")
+        http = http.authorizeRequests()
+                .antMatchers( HttpMethod.POST, "/v1/users/login","/v1/users/signup")
+                .permitAll()
+                .antMatchers(HttpMethod.GET, "/v1/certificates/*")
+                .permitAll()
                 .antMatchers(HttpMethod.POST, "/v1/users/*/order/for/certificate/*")
+                .hasAnyAuthority("user","admin")
+                .antMatchers(HttpMethod.GET, "/v1/**")
+                .hasAnyAuthority("user", "admin")
+                .anyRequest()
                 .hasAuthority("admin")
                 .and();
 
-        http.addFilterBefore(new LoginFilter(new AntPathRequestMatcher("/v1/users/login")), UsernamePasswordAuthenticationFilter.class)
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
-
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http.httpBasic().and().authorizeRequests()
-//                .antMatchers("/v1/**")
-//                .hasAuthority("admin")
-//                .antMatchers(HttpMethod.POST, "/v1/users/*/order/for/certificate/*")
-//                .hasAuthority("admin")
-//                .and().csrf().disable();
-//
-//    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -112,7 +108,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "FROM users, authorities " +
                         "WHERE users.id=authorities.user_id AND name=?");
     }
-//
+
 //    @Override
 //    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 //        auth.inMemoryAuthentication().passwordEncoder(bCryptPasswordEncoder())

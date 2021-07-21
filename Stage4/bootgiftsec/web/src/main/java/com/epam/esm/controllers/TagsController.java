@@ -111,7 +111,7 @@ public class TagsController {
     }
 
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/{id}/delete")
     public ResponseEntity<Void> deleteTag(@PathVariable String id) throws LocalAppException {
         tagRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);

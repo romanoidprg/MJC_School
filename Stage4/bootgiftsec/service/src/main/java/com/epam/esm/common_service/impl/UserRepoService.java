@@ -5,6 +5,7 @@ import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.errors.*;
+import com.epam.esm.model.Authority;
 import com.epam.esm.model.User;
 import com.epam.esm.model.UserCriteria;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,12 +15,16 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class UserRepoService implements CommonService<User>, CustomUserService {
@@ -32,7 +37,7 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
     private CommonDao<User, UserCriteria> userDao;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     CustomUserDao customUserDao;
@@ -43,7 +48,11 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
         Long id;
         ObjectMapper objectMapper = new ObjectMapper();
         User user = objectMapper.readValue(jsonString, User.class);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setEnabled(true);
+        Set<Authority> authoritySet = new HashSet<>();
+        authoritySet.add(new Authority("user"));
+        user.setAuthorities(authoritySet);
         if (!userDao.isExist(user)) {
             id = userDao.create(user);
         } else {
@@ -124,4 +133,6 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
     public User readByName(String name) {
         return customUserDao.readByName(name);
     }
+
+
 }

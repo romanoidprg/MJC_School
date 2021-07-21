@@ -3,12 +3,10 @@ package com.epam.esm.filters;
 import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.model.User;
 import com.epam.esm.utils.JwtTokenUtil;
-import org.apache.cxf.rs.security.oauth2.utils.JwtTokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,19 +31,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (isEmpty(header) || !header.startsWith("Bearer ")) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (isEmpty(header) || !header.startsWith("Bearer")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String token = header.split(" ")[1].trim();
+        String token = header.split(" ")[1].trim();
+
         if (!jwtTokenUtil.validate(token)) {
             filterChain.doFilter(request, response);
             return;
         }
 
         User user = customUserService.readByName(jwtTokenUtil.getUsername(token));
+
+//        User user = new User();
+//        user.setName(jwtTokenUtil.getUsername(header));
+//        Set<Authority> auths = new HashSet<>();
+//        auths.add(new Authority("user"));
+//        user.setAuthorities(auths);
 
         UsernamePasswordAuthenticationToken
                 authentication = new UsernamePasswordAuthenticationToken(

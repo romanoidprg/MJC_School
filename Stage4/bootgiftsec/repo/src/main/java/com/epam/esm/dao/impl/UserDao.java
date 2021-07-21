@@ -8,6 +8,7 @@ import com.epam.esm.model.User;
 import com.epam.esm.model.UserCriteria;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,6 +111,7 @@ public class UserDao implements CommonDao<User, UserCriteria>, CustomUserDao {
         User user = (User)s.createSQLQuery(IS_EXIST_SQL_QUERY)
                 .setParameter("name", userName)
                 .addEntity(User.class).stream().findAny().orElse(null);
+        Hibernate.initialize(user.getAuthorities());
         return user;
     }
 }

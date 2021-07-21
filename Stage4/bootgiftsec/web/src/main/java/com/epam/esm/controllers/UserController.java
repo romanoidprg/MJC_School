@@ -2,14 +2,19 @@ package com.epam.esm.controllers;
 
 import com.epam.esm.Errors.NoPermissionsForResourceException;
 import com.epam.esm.Errors.NoSuchPageException;
+import com.epam.esm.Errors.UnknownUserOrWrongPasswordException;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.errors.LocalAppException;
+import com.epam.esm.model.Authority;
 import com.epam.esm.model.IdWrapper;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import com.epam.esm.utils.JwtTokenUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageImpl;
@@ -23,10 +28,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,6 +51,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping(value = "/v1/users")
 public class UserController {
 
+    private static final String REL_LOGIN = "Log_in";
+    private static final String REL_SIGNIN = "Sign_in";
+    private static final String MSG_LOGOUT = "Logouted";
     @Autowired
     @Qualifier("userRepoService")
     CommonService<User> userRepoService;
@@ -65,35 +71,39 @@ public class UserController {
     @Autowired
     JwtTokenUtil jwtTokenUtil;
 
-    @PostMapping(value = "login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        try {
-            org.springframework.security.core.userdetails.User userUD
-                    = new org.springframework.security.core.userdetails.User(user.getName(),
-                    user.getPassword(),
-                    user.isEnabled(),
-                    true,
-                    true,
-                    true,
-                    user.getAuthorities());
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
-            return ResponseEntity.ok()
-                    .header(
-                            HttpHeaders.AUTHORIZATION,
-                            jwtTokenUtil.generateAccessToken(userUD)
-                    )
-                    .body(userUD.getUsername());
+    @PostMapping(value = "/login")
+    public ResponseEntity<String> login(@RequestBody String jsonUser) throws Exception {
+        try {
+            User reqwestUser = (new ObjectMapper()).readValue(jsonUser, User.class);
+            User user = customUserService.readByName(reqwestUser.getName());
+
+            if (user != null && bCryptPasswordEncoder.matches(reqwestUser.getPassword(), user.getPassword())) {
+                String swt = jwtTokenUtil.generateAccessToken(user);
+
+                return ResponseEntity.ok()
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                swt
+                        )
+                        .body(swt);
+            } else {
+                throw new UnknownUserOrWrongPasswordException();
+            }
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
-    @PostMapping
+    @PostMapping(value = "/signup")
     public EntityModel<IdWrapper> createUser(@RequestBody String jsonString) throws Exception {
         Long userId = userRepoService.createFromJson(jsonString);
         return EntityModel.of(IdWrapper.of(userId),
                 linkTo(methodOn(UserController.class).createUser(jsonString)).withSelfRel());
     }
+
 
     @PostMapping(value = "/{userId}/order/for/certificate/{certId}")
     public EntityModel<IdWrapper> createOrder(@PathVariable String userId, @PathVariable String certId) throws Exception {
