@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class CertRepoService implements CommonService<GiftCertificate>, CustomCertService {
@@ -52,6 +53,7 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
         }
         return id;
     }
+
     private Set<Tag> refreshAndCorrectTags(GiftCertificate cert) {
         Set<Tag> newTags = new HashSet<>();
         ExampleMatcher em = ExampleMatcher.matchingAll()
@@ -92,17 +94,30 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
     @Override
     public Page<GiftCertificate> readCertsWithTags(Pageable pageable, String... tagNames) {
         Set<GiftCertificate> certs = new HashSet<>();
-        for(String n :tagNames) {
+        List<String> namesList = Arrays.asList(tagNames);
+        for (String n : namesList) {
             certs.addAll(certRepo.findByTagsName(n));
         }
-        PageImpl<GiftCertificate> page = new PageImpl(Arrays.asList(certs.toArray()), pageable, certs.size());
+        List<GiftCertificate> result = certs.stream()
+                .filter(c -> c.getTags().stream()
+                        .filter(t -> namesList.contains(t.getName()))
+                        .collect(Collectors.toList()).size() == namesList.size())
+                .collect(Collectors.toList());
+        PageImpl<GiftCertificate> page = new PageImpl(result, pageable, result.size());
 
         return page;
     }
 
     @Override
     public Page<GiftCertificate> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
-        return null;
+        String tagName = params[0] == null ? "" :  params[0] ;
+        String name = params[1] == null ? "" :  params[1] ;
+        String description = params[2] == null ? "" :   params[2] ;
+        List<GiftCertificate> result = certRepo.findByNameContainingAndDescriptionContainingAndTagsNameContaining(pageable,name, description, tagName);
+        result.forEach(c-> c.getTags().forEach(t -> t.setCertificates(null)));
+        PageImpl<GiftCertificate> page = new PageImpl(result, pageable, result.size());
+
+        return page;
     }
 
     @Override

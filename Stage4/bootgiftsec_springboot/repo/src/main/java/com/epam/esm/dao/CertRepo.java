@@ -12,5 +12,6 @@ import java.util.List;
 @Repository
 public interface CertRepo extends JpaRepository<GiftCertificate,Long> {
     List<GiftCertificate> findByTagsName(String name);
+    List<GiftCertificate> findByNameContainingAndDescriptionContainingAndTagsNameContaining(Pageable pageable, String name, String description, String tagName);
 
 }

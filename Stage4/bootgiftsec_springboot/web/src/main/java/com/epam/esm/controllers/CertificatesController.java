@@ -8,13 +8,10 @@ import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.model.BoolWrapper;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.IdWrapper;
-import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -56,8 +53,7 @@ public class CertificatesController {
         return EntityModel.of(IdWrapper.of(id),
                 getLinkRead(id),
                 getLinkReadParams("tag_name", "name", "descr",
-                        "true", "false", "false",
-                        "asc", "asc", "asc",
+                        "id", "asc",
                         DEF_PAGE, DEF_P_SIZE),
                 getLinkDel(id));
     }
@@ -90,7 +86,7 @@ public class CertificatesController {
 
         List<EntityModel<GiftCertificate>> entCerts = entityCertListFromPage(resultPage);
         CollectionModel<EntityModel<GiftCertificate>> collEntCerts = CollectionModel.of(
-                entCerts, getLinkGetWithTags(tags, sortBy, sortOrder, page, pSize).withSelfRel().expand()
+                entCerts, getLinkReadParams(tags, sortBy, sortOrder, page, pSize).withSelfRel().expand()
         );
         collEntCerts.add(getLinksPaginationForGetWithTags(tags, resultPage));
 
@@ -122,23 +118,75 @@ public class CertificatesController {
         if (page.hasPrevious()) {
             int firstPage = page.getPageable().first().getPageNumber();
             int prevPage = page.previousOrFirstPageable().getPageNumber();
-            links.add(getLinkGetWithTags(tags, sortBy, order, firstPage, page.getSize()).expand().withRel(REL_FIRST_PAGE));
-            links.add(getLinkGetWithTags(tags, sortBy, order, prevPage, page.getSize()).expand().withRel(REL_PREVIOUS_PAGE));
+            links.add(getLinkReadParams(tags, sortBy, order, firstPage, page.getSize()).expand().withRel(REL_FIRST_PAGE));
+            links.add(getLinkReadParams(tags, sortBy, order, prevPage, page.getSize()).expand().withRel(REL_PREVIOUS_PAGE));
         }
         if (page.hasNext()) {
             int nextPage = page.nextPageable().getPageNumber();
             int lastPage = page.getTotalPages() - 1;
-            links.add(getLinkGetWithTags(tags, sortBy, order, nextPage, page.getSize()).expand().withRel(REL_NEXT_PAGE));
-            links.add(getLinkGetWithTags(tags, sortBy, order, lastPage, page.getSize()).expand().withRel(REL_LAST_PAGE));
+            links.add(getLinkReadParams(tags, sortBy, order, nextPage, page.getSize()).expand().withRel(REL_NEXT_PAGE));
+            links.add(getLinkReadParams(tags, sortBy, order, lastPage, page.getSize()).expand().withRel(REL_LAST_PAGE));
         }
         return links;
     }
 
-    private Link getLinkGetWithTags(String[] tags, String sortBy, String order, Integer page, Integer pSize) throws Exception {
+    private Link getLinkReadParams(String[] tags, String sortBy, String order, Integer page, Integer pSize) throws Exception {
         return linkTo(methodOn(CertificatesController.class)
                 .readCertsWithTags(tags, sortBy, order, page, pSize)).withRel(REL_READ_CERT_TAGS);
     }
 
+    @GetMapping
+    public CollectionModel<EntityModel<GiftCertificate>> readCertificatesByParams(
+            @RequestParam(value = "tag_name", required = false) String tagName,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "sort_by", required = false) String sortBy,
+            @RequestParam(value = "sort_order", required = false) String sortOrder,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "page_size", required = false) Integer pSize
+    ) throws Exception {
+        Pageable pageable = getPagebale(sortBy, sortOrder, page, pSize);
+
+        Page<GiftCertificate> resultPage = certRepoService.readByCriteria(pageable, tagName, name, description);
+
+        if (resultPage.getNumber() > resultPage.getTotalPages()) {
+            throw new NoSuchPageException();
+        }
+
+        List<EntityModel<GiftCertificate>> entCerts = entityCertListFromPage(resultPage);
+        CollectionModel<EntityModel<GiftCertificate>> collEntCerts = CollectionModel.of(
+                entCerts, getLinkReadParams(tagName, name, description, sortBy, sortOrder, page, pSize).withSelfRel().expand()
+        );
+        collEntCerts.add(getLinksPagination(tagName, name, description, resultPage));
+
+        return collEntCerts;
+
+    }
+
+
+    private List<Link> getLinksPagination(String tagName, String name, String description,
+                                          Page<GiftCertificate> page) throws Exception {
+        List<Link> links = new ArrayList<>();
+        String sortBy = null;
+        String order = null;
+        if (!page.getPageable().getSort().toList().isEmpty()) {
+            sortBy = page.getPageable().getSort().toList().get(0).getProperty();
+            order = page.getPageable().getSort().toList().get(0).getDirection().name();
+        }
+        if (page.hasPrevious()) {
+            int firstPage = page.getPageable().first().getPageNumber();
+            int prevPage = page.previousOrFirstPageable().getPageNumber();
+            links.add(getLinkReadParams(tagName, name, description, sortBy, order, firstPage, page.getSize()).expand().withRel(REL_FIRST_PAGE));
+            links.add(getLinkReadParams(tagName, name, description, sortBy, order, prevPage, page.getSize()).expand().withRel(REL_PREVIOUS_PAGE));
+        }
+        if (page.hasNext()) {
+            int nextPage = page.nextPageable().getPageNumber();
+            int lastPage = page.getTotalPages() - 1;
+            links.add(getLinkReadParams(tagName, name, description, sortBy, order, nextPage, page.getSize()).expand().withRel(REL_NEXT_PAGE));
+            links.add(getLinkReadParams(tagName, name, description, sortBy, order, lastPage, page.getSize()).expand().withRel(REL_LAST_PAGE));
+        }
+        return links;
+    }
 
     @PutMapping(value = "/{id}")
     public EntityModel<BoolWrapper> changeCertificateField(@PathVariable String id,
@@ -146,90 +194,6 @@ public class CertificatesController {
         return EntityModel.of(BoolWrapper.of(certRepoService.updateField(id, params)),
                 getLinkRead(Long.parseLong(id)),
                 getLinkDel(Long.parseLong(id)));
-    }
-
-
-    @GetMapping
-    public CollectionModel<EntityModel<GiftCertificate>> readCertificatesByParams(
-            @RequestParam(value = "tag_name", required = false) String tagName,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "sort_by_name", required = false) String sortByName,
-            @RequestParam(value = "sort_by_cr_date", required = false) String sortByCrDate,
-            @RequestParam(value = "sort_by_upd_date", required = false) String sortByUpdDate,
-            @RequestParam(value = "sort_name_order", required = false) String sortNameOrder,
-            @RequestParam(value = "sort_cr_date_order", required = false) String sortCrDateOrder,
-            @RequestParam(value = "sort_upd_date_order", required = false) String sortUpdDateOrder,
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "page_size", required = false) Integer pSize
-    ) throws Exception {
-        Pageable pageable = getPagebale(page, pSize, Sort.unsorted());
-        List<GiftCertificate> certList = certRepoService.readByCriteria(pageable, tagName, name,
-                description, sortByName, sortByCrDate,
-                sortByUpdDate, sortNameOrder, sortCrDateOrder, sortUpdDateOrder).toList();
-        List<EntityModel<GiftCertificate>> entCerts = new ArrayList<>();
-        Long totalCount = 0L;//certRepoService.getLastQueryCount();
-        PageImpl<EntityModel<GiftCertificate>> pager = new PageImpl(entCerts, pageable, totalCount);
-
-        if (pageable.getPageNumber() >= pager.getTotalPages()) {
-            throw new NoSuchPageException();
-        }
-
-        entCerts = new ArrayList<>();
-        for (GiftCertificate c : certList) {
-            entCerts.add(EntityModel.of(c,
-                    getLinkRead(c.getId()),
-                    getLinkDel(c.getId())));
-        }
-        pager = new PageImpl(entCerts, pageable, totalCount);
-        CollectionModel<EntityModel<GiftCertificate>> collEntCerts = CollectionModel.of(pager,
-                getLinkReadParams(tagName, name, description,
-                        sortByName, sortByCrDate, sortByUpdDate,
-                        sortNameOrder, sortCrDateOrder, sortUpdDateOrder, page, pSize)
-                        .expand().withSelfRel());
-        collEntCerts.add(getLinksPagination(tagName, name, description,
-                sortByName, sortByCrDate, sortByUpdDate,
-                sortNameOrder, sortCrDateOrder, sortUpdDateOrder, pageable, pager));
-
-        return collEntCerts;
-
-    }
-
-    private List<Link> getLinksPagination(String tagName, String name, String description,
-                                          String sortByName, String sortByCrDate, String sortByUpdDate,
-                                          String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder,
-                                          Pageable pageable,
-                                          PageImpl<EntityModel<GiftCertificate>> pager) throws Exception {
-        List<Link> links = new ArrayList<>();
-        if (pageable.getPageNumber() != 0) {
-            links.add(getLinkReadParams(tagName, name, description,
-                    sortByName, sortByCrDate, sortByUpdDate,
-                    sortNameOrder, sortCrDateOrder, sortUpdDateOrder,
-                    (pageable.first().getPageNumber()),
-                    (pageable.getPageSize()))
-                    .expand().withRel(REL_FIRST_PAGE));
-            links.add(getLinkReadParams(tagName, name, description,
-                    sortByName, sortByCrDate, sortByUpdDate,
-                    sortNameOrder, sortCrDateOrder, sortUpdDateOrder,
-                    (pageable.previousOrFirst().getPageNumber()),
-                    (pageable.getPageSize()))
-                    .expand().withRel(REL_PREVIOUS_PAGE));
-        }
-        if (pageable.next().getPageNumber() < pager.getTotalPages()) {
-            links.add(getLinkReadParams(tagName, name, description,
-                    sortByName, sortByCrDate, sortByUpdDate,
-                    sortNameOrder, sortCrDateOrder, sortUpdDateOrder,
-                    (pageable.next().getPageNumber()),
-                    (pageable.getPageSize()))
-                    .expand().withRel(REL_NEXT_PAGE));
-            links.add(getLinkReadParams(tagName, name, description,
-                    sortByName, sortByCrDate, sortByUpdDate,
-                    sortNameOrder, sortCrDateOrder, sortUpdDateOrder,
-                    (pager.getTotalPages() - 1),
-                    (pageable.getPageSize()))
-                    .expand().withRel(REL_LAST_PAGE));
-        }
-        return links;
     }
 
 
@@ -244,15 +208,10 @@ public class CertificatesController {
                 .deleteCertificate(String.valueOf(id))).withRel(REL_DELETE_CERT);
     }
 
-    private Link getLinkReadParams(String tagName, String name, String description,
-                                   String sortByName, String sortByCrDate, String sortByUpdDate,
-                                   String sortNameOrder, String sortCrDateOrder, String sortUpdDateOrder,
-                                   int page, int pSize) throws Exception {
-        return linkTo(methodOn(CertificatesController.class)
-                .readCertificatesByParams(tagName, name, description,
-                        sortByName, sortByCrDate, sortByUpdDate,
-                        sortNameOrder, sortCrDateOrder, sortUpdDateOrder,
-                        page, pSize)).withRel(REL_READ_CERT_PARAMS);
+    private Link getLinkReadParams(String tagName, String name, String description, String sortBy, String sortOrder,
+                                   Integer page, Integer pSize) throws Exception {
+        return linkTo(methodOn(CertificatesController.class).readCertificatesByParams(tagName, name, description,
+                sortBy, sortOrder, page, pSize)).withRel(REL_READ_CERT_PARAMS);
     }
 
     private Link getLinkRead(Long id) throws Exception {
