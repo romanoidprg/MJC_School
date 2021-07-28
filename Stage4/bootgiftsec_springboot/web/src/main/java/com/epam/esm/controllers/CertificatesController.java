@@ -59,10 +59,10 @@ public class CertificatesController {
     }
 
     @GetMapping(value = "/{id}")
-    public EntityModel<GiftCertificate> readCertificateById(@PathVariable String id) throws Exception {
+    public EntityModel<GiftCertificate> readCertificateById(@PathVariable Long id) throws Exception {
         return EntityModel.of(certRepoService.readById(id),
-                getLinkRead(Long.parseLong(id)).withSelfRel(),
-                getLinkDel(Long.parseLong(id)));
+                getLinkRead(id).withSelfRel(),
+                getLinkDel(id));
     }
 
     @GetMapping(value = "/withtags")
@@ -189,23 +189,23 @@ public class CertificatesController {
     }
 
     @PutMapping(value = "/{id}")
-    public EntityModel<BoolWrapper> changeCertificateField(@PathVariable String id,
+    public EntityModel<BoolWrapper> changeCertificateField(@PathVariable Long id,
                                                            @RequestParam Map<String, String> params) throws Exception {
         return EntityModel.of(BoolWrapper.of(certRepoService.updateField(id, params)),
-                getLinkRead(Long.parseLong(id)),
-                getLinkDel(Long.parseLong(id)));
+                getLinkRead(id),
+                getLinkDel(id));
     }
 
 
     @DeleteMapping(value = "/{id}/delete")
-    public ResponseEntity<Void> deleteCertificate(@PathVariable String id) throws LocalAppException {
+    public ResponseEntity<Void> deleteCertificate(@PathVariable Long id) throws LocalAppException {
         certRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     private Link getLinkDel(Long id) throws LocalAppException {
         return linkTo(methodOn(CertificatesController.class)
-                .deleteCertificate(String.valueOf(id))).withRel(REL_DELETE_CERT);
+                .deleteCertificate(id)).withRel(REL_DELETE_CERT);
     }
 
     private Link getLinkReadParams(String tagName, String name, String description, String sortBy, String sortOrder,
@@ -216,18 +216,8 @@ public class CertificatesController {
 
     private Link getLinkRead(Long id) throws Exception {
         return linkTo(methodOn(CertificatesController.class)
-                .readCertificateById(String.valueOf(id))).withRel(REL_READ_CERT_BY_ID);
+                .readCertificateById(id)).withRel(REL_READ_CERT_BY_ID);
     }
 
 
 }
-
-//    @PutMapping(value = "/{id}")
-//    public boolean updateCertificate(@PathVariable String id, @RequestBody String jsonString) throws LocalAppException {
-//            return certRepoService.updateFromJson(id, jsonString);
-//    }
-
-//    @PostMapping(value = "/filltable")
-//    public boolean fillCertificateTable() throws Exception {
-//        return certRepoService.fillTable();
-//    }

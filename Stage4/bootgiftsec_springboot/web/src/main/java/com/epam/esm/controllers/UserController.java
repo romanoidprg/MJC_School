@@ -4,6 +4,7 @@ import com.epam.esm.Errors.NoPermissionsForResourceException;
 import com.epam.esm.Errors.NoSuchPageException;
 import com.epam.esm.Errors.UnknownUserOrWrongPasswordException;
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomOrderService;
 import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.errors.LocalAppException;
@@ -60,7 +61,7 @@ public class UserController {
 
     @Autowired
     @Qualifier("orderRepoService")
-    CommonService<Order> orderRepoService;
+    CustomOrderService customOrderService;
 
     @Autowired
     CustomUserService customUserService;
@@ -106,32 +107,32 @@ public class UserController {
 
 
     @PostMapping(value = "/{userId}/order/for/certificate/{certId}")
-    public EntityModel<IdWrapper> createOrder(@PathVariable String userId, @PathVariable String certId) throws Exception {
+    public EntityModel<IdWrapper> createOrder(@PathVariable Long userId, @PathVariable Long certId) throws Exception {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = customUserService.readByName(userName);
-        if (Long.parseLong(userId) != user.getId()) {
+        if (!userId.equals(user.getId())) {
             throw new NoPermissionsForResourceException();
         }
-        Long orderId = orderRepoService.create(userId, certId);
+        Long orderId = customOrderService.createFromUserIdAndCertId(userId, certId);
         return EntityModel.of(IdWrapper.of(orderId),
                 linkTo(methodOn(UserController.class).createOrder(userId, certId)).withSelfRel(),
                 linkTo(methodOn(UserController.class).readUserById(userId)).withRel(REL_READ_USER_BY_ID),
                 linkTo(methodOn(CertificatesController.class).readCertificateById(certId)).withRel(REL_READ_CERT_BY_ID),
-                linkTo(methodOn(OrderController.class).readOrderById(String.valueOf(orderId))).withRel(REL_READ_ORDER_BY_ID)
+                linkTo(methodOn(OrderController.class).readOrderById(orderId)).withRel(REL_READ_ORDER_BY_ID)
         );
     }
 
 
     @GetMapping(value = "/{id}")
-    public EntityModel<User> readUserById(@PathVariable String id) throws Exception {
+    public EntityModel<User> readUserById(@PathVariable Long id) throws Exception {
         return EntityModel.of(userRepoService.readById(id),
                 linkTo(methodOn(UserController.class).readUserById(id)).withSelfRel(),
-                linkTo(methodOn(UserController.class).createOrder(id, "cert_id")).withRel(REL_ORDER_WITH_USER)
+                linkTo(methodOn(UserController.class).deleteUser(id)).withRel(REL_DEL_USER_BY_ID)
         );
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) throws LocalAppException {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) throws LocalAppException {
         userRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -157,8 +158,8 @@ public class UserController {
         entUsers = new ArrayList<>();
         for (User u : userList) {
             entUsers.add(EntityModel.of(u,
-                    linkTo(methodOn(UserController.class).readUserById(String.valueOf(u.getId()))).withRel(REL_READ_USER_BY_ID),
-                    linkTo(methodOn(UserController.class).deleteUser(String.valueOf(u.getId()))).withRel(REL_DEL_USER_BY_ID))
+                    linkTo(methodOn(UserController.class).readUserById(u.getId())).withRel(REL_READ_USER_BY_ID),
+                    linkTo(methodOn(UserController.class).deleteUser(u.getId())).withRel(REL_DEL_USER_BY_ID))
             );
         }
         pager = new PageImpl(entUsers, pageable, totalCount);

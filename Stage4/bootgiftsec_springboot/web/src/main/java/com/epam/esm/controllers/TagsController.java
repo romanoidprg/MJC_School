@@ -105,7 +105,7 @@ public class TagsController {
 
 
     @DeleteMapping(value = "/{id}/delete")
-    public ResponseEntity<Void> deleteTag(@PathVariable String id) throws LocalAppException {
+    public ResponseEntity<Void> deleteTag(@PathVariable Long id) throws LocalAppException {
         tagRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -128,14 +128,14 @@ public class TagsController {
     }
 
     @GetMapping(value = "/{id}")
-    public EntityModel<Tag> readTagById(@PathVariable String id) throws Exception {
+    public EntityModel<Tag> readTagById(@PathVariable Long id) throws Exception {
         Tag tag = tagRepoService.readById(id);
         tag.setCertificates(null);
         EntityModel<Tag> tagEM = EntityModel.of(tag,
-                getLinkRead(Long.parseLong(id)).withSelfRel(),
+                getLinkRead(id).withSelfRel(),
                 getLinkWutuhco(),
                 getLinkReadParams("", "name", "asc", DEF_PAGE, DEF_P_SIZE),
-                getLinkDel(Long.parseLong(id)));
+                getLinkDel(id));
         return tagEM;
     }
 
@@ -144,7 +144,7 @@ public class TagsController {
     }
 
     private Link getLinkDel(Long id) throws LocalAppException {
-        return linkTo(methodOn(TagsController.class).deleteTag(String.valueOf(id))).withRel(REL_DELETE_TAG);
+        return linkTo(methodOn(TagsController.class).deleteTag(id)).withRel(REL_DELETE_TAG);
     }
 
     private Link getLinkReadParams(String name, String sortBy, String sortOrder, Integer page, Integer pSize) throws Exception {
@@ -152,7 +152,7 @@ public class TagsController {
     }
 
     private Link getLinkRead(Long id) throws Exception {
-        return linkTo(methodOn(TagsController.class).readTagById(String.valueOf(id))).withRel(REL_READ_BY_ID);
+        return linkTo(methodOn(TagsController.class).readTagById(id)).withRel(REL_READ_BY_ID);
     }
 
 

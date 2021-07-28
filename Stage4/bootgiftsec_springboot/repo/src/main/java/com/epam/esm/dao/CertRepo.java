@@ -10,8 +10,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CertRepo extends JpaRepository<GiftCertificate,Long> {
+public interface CertRepo extends JpaRepository<GiftCertificate, Long> {
     List<GiftCertificate> findByTagsName(String name);
-    List<GiftCertificate> findByNameContainingAndDescriptionContainingAndTagsNameContaining(Pageable pageable, String name, String description, String tagName);
+
+    Page<GiftCertificate> findByNameContainingAndDescriptionContainingAndTagsNameContaining(
+            String name, String description, String tagName, Pageable pageable);
 
 }

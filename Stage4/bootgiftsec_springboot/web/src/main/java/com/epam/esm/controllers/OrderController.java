@@ -48,8 +48,8 @@ public class OrderController {
         entOrders = new ArrayList<>();
         for (Order o : orderList) {
             entOrders.add(EntityModel.of(o,
-                    linkTo(methodOn(OrderController.class).readOrderById(String.valueOf(o.getId()))).withRel(REL_READ_ORDER_BY_ID),
-                    linkTo(methodOn(OrderController.class).deleteOrder(String.valueOf(o.getId()))).withRel(REL_DEL_ORDER_BY_ID))
+                    linkTo(methodOn(OrderController.class).readOrderById(o.getId())).withRel(REL_READ_ORDER_BY_ID),
+                    linkTo(methodOn(OrderController.class).deleteOrder(o.getId())).withRel(REL_DEL_ORDER_BY_ID))
             );
         }
         pager = new PageImpl(entOrders, pageable, totalCount);
@@ -79,8 +79,8 @@ public class OrderController {
         entOrders = new ArrayList<>();
         for (Order o : orderList) {
             entOrders.add(EntityModel.of(o,
-                    linkTo(methodOn(OrderController.class).readOrderById(String.valueOf(o.getId()))).withRel(REL_READ_ORDER_BY_ID),
-                    linkTo(methodOn(OrderController.class).deleteOrder(String.valueOf(o.getId()))).withRel(REL_DEL_ORDER_BY_ID))
+                    linkTo(methodOn(OrderController.class).readOrderById(o.getId())).withRel(REL_READ_ORDER_BY_ID),
+                    linkTo(methodOn(OrderController.class).deleteOrder(o.getId())).withRel(REL_DEL_ORDER_BY_ID))
             );
         }
         pager = new PageImpl(entOrders, pageable, totalCount);
@@ -94,14 +94,14 @@ public class OrderController {
 
 
     @GetMapping(value = "/{id}")
-    public EntityModel<Order> readOrderById(@PathVariable String id) throws LocalAppException {
+    public EntityModel<Order> readOrderById(@PathVariable Long id) throws LocalAppException {
         return EntityModel.of(orderRepoService.readById(id),
                 linkTo(methodOn(OrderController.class).readOrderById(id)).withSelfRel(),
                 linkTo(methodOn(OrderController.class).deleteOrder(id)).withRel(REL_DEL_ORDER_BY_ID));
     }
 
     @DeleteMapping(value = "/{id}/delete")
-    public ResponseEntity<Void> deleteOrder(@PathVariable String id) throws LocalAppException {
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) throws LocalAppException {
         orderRepoService.deleteById(id);
         return new ResponseEntity(HttpStatus.OK);
     }

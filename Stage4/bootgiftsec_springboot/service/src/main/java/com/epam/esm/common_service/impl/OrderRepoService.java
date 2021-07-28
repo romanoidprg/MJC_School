@@ -1,17 +1,32 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomOrderService;
+import com.epam.esm.dao.CertRepo;
+import com.epam.esm.dao.OrderRepo;
+import com.epam.esm.dao.UserRepo;
 import com.epam.esm.errors.*;
 import com.epam.esm.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Map;
 
 
-public class OrderRepoService implements CommonService<Order> {
+public class OrderRepoService implements CommonService<Order>, CustomOrderService {
+
+    @Autowired
+    OrderRepo orderRepo;
+    @Autowired
+    UserRepo userRepo;
+    @Autowired
+    CertRepo certRepo;
 
     private final Logger logger = LogManager.getLogger(OrderRepoService.class);
 
@@ -21,12 +36,25 @@ public class OrderRepoService implements CommonService<Order> {
     }
 
     @Override
-    public Long create(String... params) throws LocalAppException {
-        return null;
+    public Long createFromUserIdAndCertId(Long userId, Long certId) throws Exception{
+        User user = userRepo.findById(userId).orElse(null);
+        GiftCertificate cert = certRepo.findById(certId).orElse(null);
+        if(user==null) {
+            throw new NoSuchUserIdException(String.valueOf(userId));
+        } else if (cert==null) {
+            throw new NoSuchCertIdException(String.valueOf(certId));
+        } else {
+            Order order = new Order();
+            order.setUser(user);
+            order.setCert(cert);
+            order.setCost(cert.getPrice());
+            order.setTimeStamp(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+            return orderRepo.save(order).getId();
+        }
     }
 
     @Override
-    public Order readById(String id) throws LocalAppException {
+    public Order readById(Long id) throws LocalAppException {
         return null;
     }
 
@@ -36,20 +64,14 @@ public class OrderRepoService implements CommonService<Order> {
     }
 
     @Override
-    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
+    public boolean updateField(Long id, Map<String, String> params) throws LocalAppException {
         return false;
     }
 
     @Override
-    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
-        return false;
-    }
-
-    @Override
-    public void deleteById(String id) throws LocalAppException {
+    public void deleteById(Long id) throws LocalAppException {
 
     }
-
 
 }
 //
@@ -64,7 +86,7 @@ public class OrderRepoService implements CommonService<Order> {
 //        String userId = params[0];
 //        String certId = params[1];
 //        if (userId.matches("[0-9]+")) {
-//            if (certId.matches("[0-9]+")) {
+//            if (certId.matches("[0-9]+")) {`
 //                Order order = new Order();
 //                User user = userDao.readById(Long.parseLong(userId));
 //                if (user == null) {

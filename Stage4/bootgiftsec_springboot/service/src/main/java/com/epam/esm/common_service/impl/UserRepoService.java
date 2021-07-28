@@ -15,7 +15,6 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -55,12 +54,7 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
     }
 
     @Override
-    public Long create(String... params) throws LocalAppException {
-        return null;
-    }
-
-    @Override
-    public User readById(String id) throws LocalAppException {
+    public User readById(Long id) throws LocalAppException {
         return null;
     }
 
@@ -70,17 +64,12 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
     }
 
     @Override
-    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
+    public boolean updateField(Long id, Map<String, String> params) throws LocalAppException {
         return false;
     }
 
     @Override
-    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
-        return false;
-    }
-
-    @Override
-    public void deleteById(String id) throws LocalAppException {
+    public void deleteById(Long id) throws LocalAppException {
 
     }
 

@@ -9,7 +9,4 @@ import java.util.List;
 public interface CustomCertService {
 
     Page<GiftCertificate> readCertsWithTags(Pageable pageable, String... tags);
-
-    Long getLastQueryCountFromCustom();
-
 }

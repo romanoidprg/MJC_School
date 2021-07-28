@@ -53,20 +53,11 @@ public class TagRepoService implements CommonService<Tag>, CustomTagServise<Tag>
     }
 
 
-
     @Override
-    public Long create(String... params) throws LocalAppException {
-        return null;
-    }
-
-    @Override
-    public Tag readById(String id) throws LocalAppException {
-        if (!id.matches("[0..9]+")){
-            throw new NoSuchTagIdException(id);
-        }
-        Optional<Tag> tag = tagRepo.findById(Long.parseLong(id));
+    public Tag readById(Long id) throws LocalAppException {
+        Optional<Tag> tag = tagRepo.findById(id);
         if (!tag.isPresent()) {
-            throw new NoSuchTagIdException(id);
+            throw new NoSuchTagIdException(String.valueOf(id));
         }
         return tag.get();
     }
@@ -87,18 +78,13 @@ public class TagRepoService implements CommonService<Tag>, CustomTagServise<Tag>
     }
 
     @Override
-    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
+    public boolean updateField(Long id, Map<String, String> params) throws LocalAppException {
         return false;
     }
 
     @Override
-    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
-        return false;
-    }
-
-    @Override
-    public void deleteById(String id) throws LocalAppException {
-        tagRepo.deleteById(Long.parseLong(id));
+    public void deleteById(Long id) throws LocalAppException {
+        tagRepo.deleteById(id);
     }
 
     @Override
