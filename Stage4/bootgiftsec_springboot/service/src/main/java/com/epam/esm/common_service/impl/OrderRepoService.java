@@ -36,12 +36,12 @@ public class OrderRepoService implements CommonService<Order>, CustomOrderServic
     }
 
     @Override
-    public Long createFromUserIdAndCertId(Long userId, Long certId) throws Exception{
+    public Long createFromUserIdAndCertId(Long userId, Long certId) throws Exception {
         User user = userRepo.findById(userId).orElse(null);
         GiftCertificate cert = certRepo.findById(certId).orElse(null);
-        if(user==null) {
+        if (user == null) {
             throw new NoSuchUserIdException(String.valueOf(userId));
-        } else if (cert==null) {
+        } else if (cert == null) {
             throw new NoSuchCertIdException(String.valueOf(certId));
         } else {
             Order order = new Order();
@@ -55,7 +55,12 @@ public class OrderRepoService implements CommonService<Order>, CustomOrderServic
 
     @Override
     public Order readById(Long id) throws LocalAppException {
-        return null;
+        Order result;
+        result = orderRepo.findById(id).orElse(null);
+        if (result == null) {
+            throw new NoSuchOrderIdException(String.valueOf(id));
+        }
+        return result;
     }
 
     @Override
@@ -70,7 +75,7 @@ public class OrderRepoService implements CommonService<Order>, CustomOrderServic
 
     @Override
     public void deleteById(Long id) throws LocalAppException {
-
+        orderRepo.deleteById(id);
     }
 
 }

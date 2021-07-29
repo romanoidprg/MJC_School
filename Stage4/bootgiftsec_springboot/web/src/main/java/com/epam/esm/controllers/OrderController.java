@@ -4,6 +4,7 @@ import com.epam.esm.Errors.NoSuchPageException;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.model.Order;
+import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageImpl;
@@ -31,6 +32,24 @@ public class OrderController {
     @Autowired
     @Qualifier("orderRepoService")
     CommonService<Order> orderRepoService;
+
+    @GetMapping(value = "/{id}")
+    public EntityModel<Order> readOrderById(@PathVariable Long id) throws LocalAppException {
+        Order result = orderRepoService.readById(id);
+
+        return EntityModel.of(getOrderClearedFromSensitiveInfo(result),
+                linkTo(methodOn(OrderController.class).readOrderById(id)).withSelfRel(),
+                linkTo(methodOn(OrderController.class).deleteOrder(id)).withRel(REL_DEL_ORDER_BY_ID));
+    }
+
+    private Order getOrderClearedFromSensitiveInfo(Order order) {
+        User user = new User();
+        user.setId(order.getUser().getId());
+        user.setName(order.getUser().getName());
+        order.setUser(user);
+        order.getCert().getTags().forEach(tag -> tag.setCertificates(null));
+        return order;
+    }
 
     @GetMapping
     public CollectionModel<EntityModel<Order>> readAllOrders(@RequestParam(value = "page", required = false) Integer page,
@@ -92,13 +111,6 @@ public class OrderController {
         return collEntOrders;
     }
 
-
-    @GetMapping(value = "/{id}")
-    public EntityModel<Order> readOrderById(@PathVariable Long id) throws LocalAppException {
-        return EntityModel.of(orderRepoService.readById(id),
-                linkTo(methodOn(OrderController.class).readOrderById(id)).withSelfRel(),
-                linkTo(methodOn(OrderController.class).deleteOrder(id)).withRel(REL_DEL_ORDER_BY_ID));
-    }
 
     @DeleteMapping(value = "/{id}/delete")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) throws LocalAppException {

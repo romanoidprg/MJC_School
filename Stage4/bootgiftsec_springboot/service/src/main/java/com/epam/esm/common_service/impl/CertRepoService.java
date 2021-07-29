@@ -62,6 +62,7 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         for (Tag t : cert.getTags()) {
             if (!tagRepo.exists(Example.of(t, em))) {
+                t.setId(null);
                 tagRepo.save(t);
                 newTags.add(t);
             } else {
@@ -96,7 +97,7 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
                         .collect(Collectors.toList()).size() == namesList.size())
                 .collect(Collectors.toList());
         Page<GiftCertificate> page = new PageImpl(result, pageable, result.size());
-
+//todo incorrect work of  readCertsWithTags() method
         return page;
     }
 

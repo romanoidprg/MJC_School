@@ -22,7 +22,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tags")
-public class Tag  {
+public class Tag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,10 @@ public class Tag  {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToMany(targetEntity = GiftCertificate.class, cascade = {CascadeType.ALL})
+    @ManyToMany(cascade = {CascadeType.DETACH,
+            CascadeType.MERGE,
+            CascadeType.PERSIST,
+            CascadeType.REFRESH})
     @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "tag_id"),
             inverseJoinColumns = @JoinColumn(name = "cert_id"))
     @JsonInclude(JsonInclude.Include.NON_NULL)

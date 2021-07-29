@@ -55,7 +55,10 @@ public class GiftCertificate {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private Date lastUpdateDate;
 
-    @ManyToMany(targetEntity = Tag.class, cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.DETACH,
+            CascadeType.MERGE,
+            CascadeType.PERSIST,
+            CascadeType.REFRESH}, fetch = FetchType.EAGER)
     @JoinTable(name = "certs_tags", joinColumns = @JoinColumn(name = "cert_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @JsonInclude(JsonInclude.Include.NON_NULL)
