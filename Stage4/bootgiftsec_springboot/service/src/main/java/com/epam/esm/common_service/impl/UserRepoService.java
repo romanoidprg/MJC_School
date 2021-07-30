@@ -3,7 +3,9 @@ package com.epam.esm.common_service.impl;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.CustomUserService;
 import com.epam.esm.dao.UserRepo;
-import com.epam.esm.errors.*;
+import com.epam.esm.errors.EntityAlreadyExistException;
+import com.epam.esm.errors.LocalAppException;
+import com.epam.esm.errors.NoSuchUserIdException;
 import com.epam.esm.model.Authority;
 import com.epam.esm.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +24,6 @@ import java.util.Set;
 
 public class UserRepoService implements CommonService<User>, CustomUserService {
 
-    private static final String NAMES_FILE = "D:\\JWD\\Lab\\Stage3\\bootgift\\web\\src\\main\\resources\\names.txt";
     private final Logger logger = LogManager.getLogger(UserRepoService.class);
 
     @Autowired
@@ -55,12 +56,20 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
 
     @Override
     public User readById(Long id) throws LocalAppException {
-        return null;
+        User result;
+        result = userRepo.findById(id).orElse(null);
+        if (result == null) {
+            throw new NoSuchUserIdException(String.valueOf(id));
+        }
+        return result;
     }
 
     @Override
     public Page<User> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
-        return null;
+        String userName = params.length == 0 ?
+                "" :
+                params[0] == null ? "" : params[0];
+        return userRepo.findByNameConsistIgnoreCase(userName, pageable);
     }
 
     @Override
@@ -70,88 +79,10 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
 
     @Override
     public void deleteById(Long id) throws LocalAppException {
-
     }
 
     @Override
     public User readByName(String name) {
         return userRepo.findByNameIgnoreCase(name);
     }
-//
-//    @Autowired
-//    CustomUserDao customUserDao;
-
-
 }
-//    @Override
-//    public Long create(String... params) throws LocalAppException {
-//        return null;
-//    }
-//
-//
-//    @Override
-//    public User readById(String id) throws LocalAppException {
-//        User result;
-//        if (id.matches("[0-9]+")) {
-//            result = userDao.readById(Long.parseLong(id));
-//            if (result == null) {
-//                throw new NoSuchUserIdException(id);
-//            }
-//        } else {
-//            throw new NoSuchUserIdException(id);
-//        }
-//        return result;
-//    }
-//
-//    @Override
-//    public List<User> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
-//        UserCriteria criteria = new UserCriteria();
-//        return userDao.readByCriteria(pageable, criteria);
-//    }
-//
-//    @Override
-//    public boolean updateFromJson(String id, String jsonString) throws LocalAppException {
-//        return false;
-//    }
-//
-//    @Override
-//    public boolean updateField(String id, Map<String, String> params) throws LocalAppException {
-//        return false;
-//    }
-//
-//    @Override
-//    public void deleteById(String id) throws LocalAppException {
-//        userDao.delete(readById(id));
-//    }
-//
-//    @Override
-//    public Long getLastQueryCount() {
-//        return userDao.getLastQueryCount();
-//    }
-//
-//    @Override
-//    public boolean fillTable() {
-//        boolean result = false;
-//        try {
-//            File file = new File(NAMES_FILE);
-//            User user = new User();
-//            int size = getWordsAmount(file);
-//            for (int i = 0; i < 1000; i++) {
-//                user.setName(getRandomWord(file, size));
-//                if (!userDao.isExist(user)) {
-//                    userDao.create(user);
-//                } else {
-//                    i--;
-//                }
-//            }
-//            result = true;
-//        } catch (FileNotFoundException e) {
-//            logger.error(e.getMessage());
-//        }
-//        return result;
-//    }
-//
-//    @Override
-//    public User readByName(String name) {
-//        return customUserDao.readByName(name);
-//    }

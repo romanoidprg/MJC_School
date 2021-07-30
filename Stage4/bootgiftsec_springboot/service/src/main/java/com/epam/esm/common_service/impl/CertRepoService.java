@@ -76,21 +76,26 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
     @Override
     public GiftCertificate readById(Long id) throws LocalAppException {
         GiftCertificate result;
-            result = certRepo.findById(id).orElse(null);
-            if (result == null) {
-                throw new NoSuchCertIdException(String.valueOf(id));
-            }
+        result = certRepo.findById(id).orElse(null);
+        if (result == null) {
+            throw new NoSuchCertIdException(String.valueOf(id));
+        }
         result.getTags().forEach(t -> t.setCertificates(null));
         return result;
     }
 
     @Override
     public Page<GiftCertificate> readCertsWithTags(Pageable pageable, String... tagNames) {
-        Set<GiftCertificate> certs = new HashSet<>();
+//        Set<GiftCertificate> certs = new HashSet<>();
         List<String> namesList = Arrays.asList(tagNames);
+        StringBuilder tagQueryPart = new StringBuilder("");
         for (String n : namesList) {
-            certs.addAll(certRepo.findByTagsName(n));
+            tagQueryPart.append(" ");
+            tagQueryPart.append(n);
+            tagQueryPart.append(" ");
+            tagQueryPart.append(" ");
         }
+        certs.addAll(certRepo.findByTagsName(n));
         List<GiftCertificate> result = certs.stream()
                 .filter(c -> c.getTags().stream()
                         .filter(t -> namesList.contains(t.getName()))
@@ -103,9 +108,9 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
 
     @Override
     public Page<GiftCertificate> readByCriteria(Pageable pageable, String... params) throws LocalAppException {
-        String tagName = params[0] == null ? "" : params[0];
-        String name = params[1] == null ? "" : params[1];
-        String description = params[2] == null ? "" : params[2];
+        String tagName = params.length == 0 ? "" : params[0] == null ? "" : params[0];
+        String name = params.length == 0 ? "" : params[1] == null ? "" : params[1];
+        String description = params.length == 0 ? "" : params[2] == null ? "" : params[2];
         Page<GiftCertificate> result = certRepo.findByNameContainingAndDescriptionContainingAndTagsNameContaining(name, description, tagName, pageable);
         result.forEach(c -> c.getTags().forEach(t -> t.setCertificates(null)));
 

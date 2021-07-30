@@ -6,21 +6,15 @@ import com.epam.esm.Errors.UnknownUserOrWrongPasswordException;
 import com.epam.esm.common_service.CommonService;
 import com.epam.esm.common_service.CustomOrderService;
 import com.epam.esm.common_service.CustomUserService;
-import com.epam.esm.dao.CustomUserDao;
 import com.epam.esm.errors.LocalAppException;
-import com.epam.esm.model.Authority;
 import com.epam.esm.model.IdWrapper;
-import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import com.epam.esm.utils.JwtTokenUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -31,15 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,70 +126,75 @@ public class UserController {
 
     @GetMapping
     public CollectionModel<EntityModel<User>> readAllUsers(
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "page_size", required = false) Integer pSize,
             @RequestParam(value = "sort_by", required = false) String sortBy,
-            @RequestParam(value = "sort_order", required = false) String sortOrder) throws Exception {
+            @RequestParam(value = "sort_order", required = false) String sortOrder,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "page_size", required = false) Integer pSize) throws Exception {
 
         Pageable pageable = getPagebale(page, pSize, getSort(sortBy, sortOrder));
-        List<User> userList = userRepoService.readByCriteria(pageable).toList();
-        List<EntityModel<User>> entUsers = new ArrayList<>();
-        Long totalCount = 0L;//userRepoService.getLastQueryCount();
-        PageImpl<EntityModel<User>> pager = new PageImpl(entUsers, pageable, totalCount);
+        Page<User> resultPage = userRepoService.readByCriteria(pageable);
 
-        if (pageable.getPageNumber() >= pager.getTotalPages()) {
+
+        if (resultPage.getNumber() > resultPage.getTotalPages()) {
             throw new NoSuchPageException();
         }
 
-        entUsers = new ArrayList<>();
-        for (User u : userList) {
-            entUsers.add(EntityModel.of(u,
-                    linkTo(methodOn(UserController.class).readUserById(u.getId())).withRel(REL_READ_USER_BY_ID),
-                    linkTo(methodOn(UserController.class).deleteUser(u.getId())).withRel(REL_DEL_USER_BY_ID))
-            );
-        }
-        pager = new PageImpl(entUsers, pageable, totalCount);
-        CollectionModel<EntityModel<User>> collEntUsers = CollectionModel.of(pager,
-                linkTo(methodOn(UserController.class).readAllUsers(page, pSize, sortBy, sortOrder)).withSelfRel().expand()
-        );
-        collEntUsers.add(getLinksPagination(pageable, pager));
+        List<EntityModel<User>> entUsers = entityUserListFromPage(resultPage);
+        CollectionModel<EntityModel<User>> collEntUsers = CollectionModel.of(
+                entUsers, getLinkReadAll(sortBy, sortOrder, page, pSize).expand());
+        collEntUsers.add(getLinksPagination(resultPage));
 
         return collEntUsers;
+
     }
 
 
-    private List<Link> getLinksPagination(Pageable pageable, PageImpl<EntityModel<User>> pager) throws Exception {
+    private List<EntityModel<User>> entityUserListFromPage(Page<User> resultPage) throws Exception {
+        List<User> userList = resultPage.toList();
+
+        List<EntityModel<User>> entCerts = new ArrayList<>();
+        for (User u : userList) {
+            entCerts.add(EntityModel.of(u,
+                    getLinkRead(u.getId()),
+                    getLinkDel(u.getId())));
+        }
+        return entCerts;
+    }
+
+    private Link getLinkRead(Long id) throws Exception {
+        return linkTo(methodOn(UserController.class)
+                .readUserById(id)).withRel(REL_READ_USER_BY_ID);
+    }
+
+    private Link getLinkDel(Long id) throws Exception {
+        return linkTo(methodOn(UserController.class)
+                .deleteUser(id)).withRel(REL_DEL_USER_BY_ID);
+    }
+
+    private Link getLinkReadAll(String sortBy, String sortOrder, Integer page, Integer pSize) throws Exception {
+        return linkTo(methodOn(UserController.class)
+                .readAllUsers(sortBy, sortOrder, page, pSize)).withSelfRel();
+    }
+
+    private List<Link> getLinksPagination(Page<User> page) throws Exception {
         List<Link> links = new ArrayList<>();
         String sortBy = null;
-        String sortOrder = null;
-        Sort sort = pageable.getSort();
-        if (sort.isSorted()) {
-            sortBy = sort.stream().findFirst().get().getProperty();
-            sortOrder = sort.stream().findFirst().get().getDirection().name();
+        String order = null;
+        if (!page.getPageable().getSort().toList().isEmpty()) {
+            sortBy = page.getPageable().getSort().toList().get(0).getProperty();
+            order = page.getPageable().getSort().toList().get(0).getDirection().name();
         }
-        if (pageable.getPageNumber() != 0) {
-            links.add(linkTo(methodOn(UserController.class).readAllUsers(
-                    (pageable.first().getPageNumber()),
-                    (pageable.getPageSize()),
-                    sortBy, sortOrder))
-                    .withRel(REL_FIRST_PAGE));
-            links.add(linkTo(methodOn(UserController.class).readAllUsers(
-                    (pageable.previousOrFirst().getPageNumber()),
-                    (pageable.getPageSize()),
-                    sortBy, sortOrder))
-                    .withRel(REL_PREVIOUS_PAGE));
+        if (page.hasPrevious()) {
+            int firstPage = page.getPageable().first().getPageNumber();
+            int prevPage = page.previousOrFirstPageable().getPageNumber();
+            links.add(getLinkReadAll(sortBy, order, firstPage, page.getSize()).expand().withRel(REL_FIRST_PAGE));
+            links.add(getLinkReadAll(sortBy, order, prevPage, page.getSize()).expand().withRel(REL_PREVIOUS_PAGE));
         }
-        if (pageable.next().getPageNumber() < pager.getTotalPages()) {
-            links.add(linkTo(methodOn(UserController.class).readAllUsers(
-                    (pageable.next().getPageNumber()),
-                    (pageable.getPageSize()),
-                    sortBy, sortOrder))
-                    .withRel(REL_NEXT_PAGE));
-            links.add(linkTo(methodOn(UserController.class).readAllUsers(
-                    (pager.getTotalPages() - 1),
-                    (pageable.getPageSize()),
-                    sortBy, sortOrder))
-                    .withRel(REL_LAST_PAGE));
+        if (page.hasNext()) {
+            int nextPage = page.nextPageable().getPageNumber();
+            int lastPage = page.getTotalPages() - 1;
+            links.add(getLinkReadAll(sortBy, order, nextPage, page.getSize()).expand().withRel(REL_NEXT_PAGE));
+            links.add(getLinkReadAll(sortBy, order, lastPage, page.getSize()).expand().withRel(REL_LAST_PAGE));
         }
         return links;
     }

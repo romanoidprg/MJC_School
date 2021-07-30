@@ -10,13 +10,9 @@ public interface CommonService<T> {
 
     long createFromJson(String jsonString) throws Exception;
 
-//    Long create (String... params) throws LocalAppException;
-
     T readById(Long id) throws LocalAppException;
 
     Page<T> readByCriteria(Pageable pageable, String... params) throws LocalAppException;
-
-//    boolean updateFromJson(String id, String jsonString) throws LocalAppException;
 
     boolean updateField(Long id, Map<String, String> params) throws LocalAppException;
 

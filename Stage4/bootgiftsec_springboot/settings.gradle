@@ -2,5 +2,3 @@ rootProject.name = 'bootgift'
 include 'web'
 include 'service'
 include 'repo'
-include 'repo'
-
