@@ -9,25 +9,23 @@ import com.epam.esm.errors.NoSuchUserIdException;
 import com.epam.esm.model.Authority;
 import com.epam.esm.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@Service
 public class UserRepoService implements CommonService<User>, CustomUserService {
 
-    private final Logger logger = LogManager.getLogger(UserRepoService.class);
-
     @Autowired
-    private UserRepo userRepo;
+    UserRepo userRepo;
 
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -69,7 +67,7 @@ public class UserRepoService implements CommonService<User>, CustomUserService {
         String userName = params.length == 0 ?
                 "" :
                 params[0] == null ? "" : params[0];
-        return userRepo.findByNameConsistIgnoreCase(userName, pageable);
+        return userRepo.findByNameContainingIgnoreCase(userName, pageable);
     }
 
     @Override

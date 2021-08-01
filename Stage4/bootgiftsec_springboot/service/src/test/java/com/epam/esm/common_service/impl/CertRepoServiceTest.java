@@ -60,18 +60,9 @@ class CertRepoServiceTest {
     }
 
     @Test
-    void WhenPassJsonStringThen_UpdateFromJson_Success() throws Exception {
-        assertTrue(certRepoService.updateFromJson("1", jsonStringCert));
-        assertThrows(NoSuchCertIdException.class, () -> certRepoService.updateFromJson("aa", jsonStringCert));
-        assertFalse(certRepoService.updateFromJson("1", jsonStringNoCert));
-        assertThrows(NoSuchCertIdException.class, () -> certRepoService.updateFromJson("aa", jsonStringNoCert));
-
-    }
-
-    @Test
     void WhenPassRCorrectIdThen_readById_Success() throws LocalAppException {
-        assertEquals(new GiftCertificate(), certRepoService.readById("1"));
-        assertThrows(NoSuchCertIdException.class, () -> certRepoService.readById("aa"));
+        assertEquals(new GiftCertificate(), certRepoService.readById(1L));
+        assertThrows(NoSuchCertIdException.class, () -> certRepoService.readById(923999992939L));
     }
 
     @Test
@@ -95,6 +86,6 @@ class CertRepoServiceTest {
 
     @Test
     void readById() {
-        assertThrows(NoSuchCertIdException.class,() -> certRepoService.readById("aa"));
+        assertThrows(NoSuchCertIdException.class,() -> certRepoService.readById(992384932482984L));
     }
 }

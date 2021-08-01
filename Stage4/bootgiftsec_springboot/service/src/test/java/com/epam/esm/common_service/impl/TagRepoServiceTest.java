@@ -38,13 +38,13 @@ class TagRepoServiceTest {
 
     @Test
     void readById() throws LocalAppException {
-        assertThrows(NoSuchTagIdException.class, () -> tagRepoService.readById("aa"));
-        assertEquals(new Tag(), tagRepoService.readById("1"));
+        assertThrows(NoSuchTagIdException.class, () -> tagRepoService.readById(8766564564L));
+        assertEquals(new Tag(), tagRepoService.readById(1L));
     }
 
     @Test
     void readByCriteria() throws LocalAppException {
-        assertEquals(0, tagRepoService.readByCriteria(Pageable.unpaged(), "", "").size());
-        assertEquals(2L, tagRepoService.readByCriteria(Pageable.unpaged(), "", "","").size());
+        assertEquals(0, tagRepoService.readByCriteria(Pageable.unpaged()).getContent().size());
+        assertEquals(2L, tagRepoService.readByCriteria(Pageable.unpaged(), "", "","").getContent().size());
     }
 }

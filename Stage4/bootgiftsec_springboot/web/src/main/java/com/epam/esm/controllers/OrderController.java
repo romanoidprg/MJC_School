@@ -30,7 +30,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class OrderController {
 
     @Autowired
-    @Qualifier("orderRepoService")
     CommonService<Order> orderRepoService;
 
     @GetMapping(value = "/{id}")

@@ -1,0 +1,31 @@
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+    web:
+      exposure:
+        include: health,info,shutdown
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/bootgift_sec_sprdata
+    username: root
+    password: romanoid
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+logging:
+  level:
+    org:
+      springframework:
+        transaction:
+          interceptor: TRACE
+      hibernate:
+        type: TRACE

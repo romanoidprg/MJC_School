@@ -7,18 +7,17 @@ import com.epam.esm.dao.OrderRepo;
 import com.epam.esm.dao.UserRepo;
 import com.epam.esm.errors.*;
 import com.epam.esm.model.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Map;
 
-
+@Service
 public class OrderRepoService implements CommonService<Order>, CustomOrderService {
 
     @Autowired
@@ -27,8 +26,6 @@ public class OrderRepoService implements CommonService<Order>, CustomOrderServic
     UserRepo userRepo;
     @Autowired
     CertRepo certRepo;
-
-    private final Logger logger = LogManager.getLogger(OrderRepoService.class);
 
     @Override
     public long createFromJson(String jsonString) throws Exception {

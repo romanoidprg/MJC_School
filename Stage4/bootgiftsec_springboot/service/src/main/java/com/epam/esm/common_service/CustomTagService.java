@@ -4,7 +4,7 @@ import com.epam.esm.model.Tag;
 
 import java.util.List;
 
-public interface CustomTagServise<Tag> {
+public interface CustomTagService {
 
     List<Tag> getMostUsedTagsOfUserWithMostExpensiveOrdersCost();
 

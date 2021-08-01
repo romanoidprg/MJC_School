@@ -6,26 +6,23 @@ import com.epam.esm.dao.CertRepo;
 import com.epam.esm.dao.TagRepo;
 import com.epam.esm.errors.*;
 import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.GiftCertificate_;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
-
+@Service
 public class CertRepoService implements CommonService<GiftCertificate>, CustomCertService {
-
-    private final Logger logger = LogManager.getLogger(CertRepoService.class);
 
     @Autowired
     CertRepo certRepo;
@@ -85,25 +82,29 @@ public class CertRepoService implements CommonService<GiftCertificate>, CustomCe
     }
 
     @Override
-    public Page<GiftCertificate> readCertsWithTags(Pageable pageable, String... tagNames) {
-//        Set<GiftCertificate> certs = new HashSet<>();
+    public Page<GiftCertificate> readCertsWithTags(Pageable pageable, String... tagNames) throws Exception {
         List<String> namesList = Arrays.asList(tagNames);
-        StringBuilder tagQueryPart = new StringBuilder("");
+        Tag tag;
+        List<Tag> tags = new ArrayList<>();
         for (String n : namesList) {
-            tagQueryPart.append(" ");
-            tagQueryPart.append(n);
-            tagQueryPart.append(" ");
-            tagQueryPart.append(" ");
+            tag = tagRepo.findByName(n);
+            if (tag == null) {
+                throw new NoTagWithSuchNameException(n);
+            }
+            tags.add(tag);
         }
-        certs.addAll(certRepo.findByTagsName(n));
-        List<GiftCertificate> result = certs.stream()
-                .filter(c -> c.getTags().stream()
-                        .filter(t -> namesList.contains(t.getName()))
-                        .collect(Collectors.toList()).size() == namesList.size())
-                .collect(Collectors.toList());
-        Page<GiftCertificate> page = new PageImpl(result, pageable, result.size());
-//todo incorrect work of  readCertsWithTags() method
-        return page;
+        Specification<GiftCertificate> spec = getSpecificationByTag(tags.get(0));
+        for (int i = 1; i < tags.size(); i++) {
+            spec = spec.and(getSpecificationByTag(tags.get(i)));
+        }
+        Page<GiftCertificate> resultPage = certRepo.findAll(spec, pageable);
+        resultPage.getContent().forEach(c -> c.getTags().forEach(t -> t.setCertificates(null)));
+        return resultPage;
+    }
+
+    private Specification<GiftCertificate> getSpecificationByTag(Tag tag) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.isMember(tag, root.get(GiftCertificate_.TAGS));
     }
 
     @Override

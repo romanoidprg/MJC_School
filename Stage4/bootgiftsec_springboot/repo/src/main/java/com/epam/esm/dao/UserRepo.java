@@ -13,7 +13,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     User findByNameIgnoreCase(String name);
 
-    Page<User> findByNameConsistIgnoreCase(String name, Pageable pageable);
+    Page<User> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     @Query(value = "SELECT user_id FROM " +
             "(SELECT user_id, SUM(cost) as summa FROM orders GROUP BY user_id) as t1 " +

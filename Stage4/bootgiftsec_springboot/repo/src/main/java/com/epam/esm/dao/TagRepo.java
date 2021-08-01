@@ -17,4 +17,6 @@ public interface TagRepo extends JpaRepository<Tag,Long> {
             "(SELECT t4.*, count(t4.tag_id) as count FROM orders as t3 " +
             "LEFT JOIN certs_tags as t4 on t3.cert_id=t4.cert_id WHERE user_id=?1 GROUP BY t4.tag_id) as t5) ", nativeQuery = true)
     List<Long> getIdOfMostUsefullTagByUserId(Long userId);
+
+    Tag findByName(String name);
 }

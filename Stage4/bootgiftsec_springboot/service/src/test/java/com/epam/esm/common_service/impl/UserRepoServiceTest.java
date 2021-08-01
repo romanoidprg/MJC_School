@@ -36,8 +36,8 @@ class UserRepoServiceTest {
 
     @Test
     void readById() throws LocalAppException {
-        assertThrows(NoSuchUserIdException.class, () -> userRepoService.readById("aa"));
-        assertEquals(new User(), userRepoService.readById("1"));
+        assertThrows(NoSuchUserIdException.class, () -> userRepoService.readById(234234324L));
+        assertEquals(new User(), userRepoService.readById(1L));
     }
 
 

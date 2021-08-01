@@ -18,7 +18,7 @@ public class OtherUrlController {
     public void exceptionHandler() throws NotExistEndPointException {
         NotExistEndPointException e = new NotExistEndPointException();
         logger.error(e.getMessage());
-            throw e;
+        throw e;
     }
 
 }

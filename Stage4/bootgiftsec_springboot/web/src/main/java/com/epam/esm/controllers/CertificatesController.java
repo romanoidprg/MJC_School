@@ -9,7 +9,6 @@ import com.epam.esm.model.BoolWrapper;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.IdWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
@@ -41,7 +40,6 @@ public class CertificatesController {
 
 
     @Autowired
-    @Qualifier("certRepoService")
     CommonService<GiftCertificate> certRepoService;
 
     @Autowired

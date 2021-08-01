@@ -77,12 +77,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and();
 
         http = http.authorizeRequests()
-                .antMatchers( HttpMethod.POST, "/v1/users/login","/v1/users/signup")
+                .antMatchers(HttpMethod.POST, "/v1/users/login", "/v1/users/signup")
                 .permitAll()
                 .antMatchers(HttpMethod.GET, "/v1/certificates/*")
                 .permitAll()
                 .antMatchers(HttpMethod.POST, "/v1/users/*/order/for/certificate/*")
-                .hasAnyAuthority("user","admin")
+                .hasAnyAuthority("user", "admin")
                 .antMatchers(HttpMethod.GET, "/v1/**")
                 .hasAnyAuthority("user", "admin")
                 .anyRequest()

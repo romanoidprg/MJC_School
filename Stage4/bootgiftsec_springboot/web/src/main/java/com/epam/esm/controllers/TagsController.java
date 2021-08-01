@@ -2,14 +2,12 @@ package com.epam.esm.controllers;
 
 import com.epam.esm.Errors.NoSuchPageException;
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.common_service.CustomTagServise;
+import com.epam.esm.common_service.CustomTagService;
 import com.epam.esm.errors.LocalAppException;
 import com.epam.esm.model.IdWrapper;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.CollectionModel;
@@ -32,12 +30,10 @@ public class TagsController {
 
 
     @Autowired
-    @Qualifier("tagRepoService")
     private CommonService<Tag> tagRepoService;
 
     @Autowired
-    @Qualifier("customTagRepoService")
-    private CustomTagServise<Tag> customTagRepoService;
+    private CustomTagService customTagRepoService;
 
     @PostMapping
     public EntityModel<IdWrapper> createTag(@RequestBody String jsonString) throws Exception {
@@ -45,7 +41,6 @@ public class TagsController {
         return EntityModel.of(IdWrapper.of(id),
                 getLinkRead(id),
                 getLinkWutuhco(),
-//                getLinkReadParams("", "name", "asc", DEF_PAGE, DEF_P_SIZE),
                 getLinkDel(id));
     }
 

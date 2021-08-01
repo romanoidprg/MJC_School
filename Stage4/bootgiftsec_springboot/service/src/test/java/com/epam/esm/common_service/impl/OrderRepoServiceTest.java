@@ -1,6 +1,7 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
+import com.epam.esm.common_service.CustomOrderService;
 import com.epam.esm.common_service.TestConfig;
 import com.epam.esm.dao.CommonDao;
 import com.epam.esm.errors.LocalAppException;
@@ -22,27 +23,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrderRepoServiceTest {
 
     @Autowired
-    @Qualifier("orderRepoService")
-    CommonService<Order> orderRepoService;
+    CustomOrderService orderRepoService;
+    @Autowired
+    CommonService<Order> commonOrderRepoService;
 
     @Test
-    void create() throws LocalAppException {
-        assertThrows(NoSuchCertIdException.class, () -> orderRepoService.create("1", "aa"));
-        assertThrows(NoSuchUserIdException.class, () -> orderRepoService.create("aa", "1"));
-        assertEquals(1L, orderRepoService.create("1", "1"));
+    void create() throws Exception {
+        assertThrows(NoSuchCertIdException.class, () -> orderRepoService.createFromUserIdAndCertId(1L, 82937429374L));
+        assertThrows(NoSuchUserIdException.class, () -> orderRepoService.createFromUserIdAndCertId(89237423423L, 1L));
+        assertEquals(1L, orderRepoService.createFromUserIdAndCertId(1L, 1L));
     }
 
     @Test
     void readById() throws LocalAppException {
-        assertThrows(NoSuchOrderIdException.class, () -> orderRepoService.readById("aa"));
-        assertEquals(1, orderRepoService.readById("1").getCert().getTags().size());
+        assertThrows(NoSuchOrderIdException.class, () -> commonOrderRepoService.readById(2389423894L));
+        assertEquals(1, commonOrderRepoService.readById(1L).getCert().getTags().size());
 
     }
 
     @Test
     void readByCriteria() throws LocalAppException {
-        assertThrows(NoSuchUserIdException.class, () -> orderRepoService.readByCriteria(Pageable.unpaged(), "aa"));
-        assertEquals(2, orderRepoService.readByCriteria(Pageable.unpaged(), "1").size());
+        assertThrows(NoSuchUserIdException.class, () -> commonOrderRepoService.readByCriteria(Pageable.unpaged(), "aa"));
+        assertEquals(2, commonOrderRepoService.readByCriteria(Pageable.unpaged(), "1").getContent().size());
     }
 
 }

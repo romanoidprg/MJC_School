@@ -1,7 +1,7 @@
 package com.epam.esm.common_service.impl;
 
 import com.epam.esm.common_service.CommonService;
-import com.epam.esm.common_service.CustomTagServise;
+import com.epam.esm.common_service.CustomTagService;
 import com.epam.esm.dao.TagRepo;
 import com.epam.esm.dao.UserRepo;
 import com.epam.esm.errors.EntityAlreadyExistException;
@@ -10,13 +10,12 @@ import com.epam.esm.errors.NoSuchTagIdException;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,15 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class TagRepoService implements CommonService<Tag>, CustomTagServise<Tag> {
 
-    private final Logger logger = LogManager.getLogger(TagRepoService.class);
-
-    @Autowired
-    private TagRepo tagRepo;
+@Service
+public class TagRepoService implements CommonService<Tag>, CustomTagService {
 
     @Autowired
-    private UserRepo userRepo;
+    TagRepo tagRepo;
+
+    @Autowired
+    UserRepo userRepo;
 
     @Override
     public long createFromJson(String jsonString) throws EntityAlreadyExistException, JsonProcessingException {

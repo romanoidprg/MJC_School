@@ -42,18 +42,13 @@ public class UserController {
     private static final String REL_SIGNIN = "Sign_in";
     private static final String MSG_LOGOUT = "Logouted";
     @Autowired
-    @Qualifier("userRepoService")
     CommonService<User> userRepoService;
 
     @Autowired
-    @Qualifier("orderRepoService")
     CustomOrderService customOrderService;
 
     @Autowired
     CustomUserService customUserService;
-
-    @Autowired
-    AuthenticationManager authenticationManager;
 
     @Autowired
     JwtTokenUtil jwtTokenUtil;
